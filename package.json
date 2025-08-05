@@ -4,9 +4,6 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -14,10 +11,20 @@
 		"lint": "prettier --check .",
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio"
+    "encrypt": "dotenvx encrypt -f .env.development -f .env.production",
+		"decrypt": "dotenvx decrypt -f .env.development -f .env.production",
+		"dev": "dotenvx run -f .env.development -- vite dev",
+		"build": "dotenvx run -f .env.production -- vite build",
+		"preview": "dotenvx run -f .env.production -- vite build && wrangler dev",
+		"db:gen": "drizzle-kit generate",
+		"db:seed": "dotenvx run -f .env.development -- tsx ./src/lib/server/db/seed.ts",
+		"db:migrate": "dotenvx run -f .env.development -- drizzle-kit migrate",
+		"db:studio": "dotenvx run -f .env.development -- drizzle-kit studio",
+		"db:migrate:prod": "dotenvx run -f .env.production -- drizzle-kit migrate",
+		"db:studio:prod": "dotenvx run -f .env.production -- drizzle-kit studio"
 	},
 	"devDependencies": {
+		"@dotenvx/dotenvx": "^1.48.4",
 		"@sveltejs/adapter-cloudflare": "^7.0.0",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
