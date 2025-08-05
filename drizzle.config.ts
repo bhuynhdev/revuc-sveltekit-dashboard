@@ -1,4 +1,4 @@
-import { defineConfig, Config } from 'drizzle-kit'
+import { defineConfig, type Config } from 'drizzle-kit'
 import crypto from 'crypto'
 import { mkdirSync } from 'fs'
 import path from 'path'
