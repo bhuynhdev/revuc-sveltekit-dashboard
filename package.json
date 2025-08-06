@@ -43,6 +43,7 @@
 	},
 	"dependencies": {
 		"@libsql/client": "^0.14.0",
+		"daisyui": "^5.0.50",
 		"drizzle-orm": "^0.40.0"
 	},
 	"pnpm": {
