@@ -24,11 +24,13 @@
 		"db:studio:prod": "dotenvx run -f .env.production -- drizzle-kit studio"
 	},
 	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20250807.0",
 		"@dotenvx/dotenvx": "^1.48.4",
 		"@sveltejs/adapter-cloudflare": "^7.0.0",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tailwindcss/vite": "^4.0.0",
+		"@total-typescript/ts-reset": "^0.6.1",
 		"@types/node": "^22",
 		"drizzle-kit": "^0.30.2",
 		"drizzle-seed": "^0.3.1",
