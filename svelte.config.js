@@ -3,10 +3,19 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	// Consult https://svelte.dev/docs/kit/integrations
-	// for more information about preprocessors
-	preprocess: vitePreprocess(),
-	kit: { adapter: adapter() }
+  // Consult https://svelte.dev/docs/kit/integrations
+  // for more information about preprocessors
+  preprocess: vitePreprocess(),
+  kit: {
+    adapter: adapter({
+      config: "wrangler.jsonc",
+      platformProxy: {
+        configPath: 'wrangler.jsonc',
+        persist: true
+      },
+      fallback: 'plaintext',
+    })
+  }
 };
 
 export default config;
