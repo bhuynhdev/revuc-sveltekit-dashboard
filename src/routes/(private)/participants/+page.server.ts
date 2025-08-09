@@ -1,9 +1,10 @@
+import { attendanceStatuses, DEFAULT_ITEMS_PER_PAGINATION } from '$lib/constants'
 import { participant } from '$lib/server/db/schema'
 import { type AttendanceStatus } from '$lib/server/db/types'
+import { error } from '@sveltejs/kit'
+import "@total-typescript/ts-reset/filter-boolean"
 import { and, eq, like, sql } from "drizzle-orm"
 import type { PageServerLoad } from './$types'
-import "@total-typescript/ts-reset/filter-boolean"
-import { attendanceStatuses, DEFAULT_ITEMS_PER_PAGINATION } from '$lib/constants'
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   const db = locals.db
@@ -25,6 +26,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   const whereStatement = searchCriteria.length ? and(...searchCriteria) : undefined
 
   const totalCount = await db.$count(participant, whereStatement)
+
+  // Constraint `pageNumber` in case user inputs a weird number
+  const maxNumberOfPages = Math.max(Math.ceil(totalCount / itemsPerPage), 1)
+  if (pageNumber > maxNumberOfPages || pageNumber < 1) {
+    throw error(400, 'Page number is not valid')
+  }
 
   // Offset-based pagination: Use Deferred Join technique to optimize https://orm.drizzle.team/docs/guides/limit-offset-pagination
   const sq = db
