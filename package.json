@@ -44,9 +44,11 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@iconify-json/tabler": "^1.2.20",
 		"@libsql/client": "^0.14.0",
 		"daisyui": "^5.0.50",
-		"drizzle-orm": "^0.40.0"
+		"drizzle-orm": "^0.40.0",
+		"unplugin-icons": "^22.2.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [

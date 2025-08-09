@@ -3,6 +3,8 @@
   import { page } from '$app/state'
   import { goto } from '$app/navigation'
   import { attendanceStatuses, DEFAULT_ITEMS_PER_PAGINATION } from '$lib/constants'
+  import IconTablerChevronLeft from '~icons/tabler/chevron-left'
+  import IconTablerChevronRight from '~icons/tabler/chevron-right'
 
   const { data }: PageProps = $props()
   const { totalCount, participants, alltimeStats } = $derived(data)
@@ -102,8 +104,7 @@
             onclick={goTopreviousPage}
             disabled={pageNumber === 1}
           >
-            <!-- <IconTablerChevronLeft /> -->
-            Back
+            <IconTablerChevronLeft />
           </button>
           <button
             type="button"
@@ -113,8 +114,7 @@
             onclick={goTonextPage}
             disabled={currentPageLastItemIndex >= totalCount}
           >
-            <!-- <IconTablerChevronRight /> -->
-            Next
+            <IconTablerChevronRight />
           </button>
           <p class="ml-2 text-sm text-gray-600 italic">
             {currentPageFirstItemIndex} - {currentPageLastItemIndex} of {totalCount}
