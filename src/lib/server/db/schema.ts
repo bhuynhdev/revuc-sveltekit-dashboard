@@ -1,3 +1,4 @@
+import { attendanceStatuses, categoryTypes } from '$lib/constants'
 import { relations, sql, type SQL } from 'drizzle-orm'
 import { blob, check, integer, primaryKey, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
 
@@ -21,18 +22,6 @@ export const event = sqliteTable(
     )
   ]
 )
-
-export const attendanceStatuses = [
-  'registered',
-  'declined',
-  'confirmed',
-  'confirmeddelayedcheckin',
-  'attended',
-  'waitlist',
-  'waitlistattended'
-] as const
-
-export const categoryTypes = ['general', 'inhouse', 'sponsor', 'mlh'] as const
 
 export const participant = sqliteTable('participant', {
   id: integer('id').primaryKey(),
