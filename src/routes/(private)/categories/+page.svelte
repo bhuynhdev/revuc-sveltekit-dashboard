@@ -1,18 +1,17 @@
 <script lang="ts">
   // import { deleteCategory } from '$lib/features/judging/actions';
-  // import CategoryCreateForm from '$lib/features/judging/CategoryCreateForm.svelte';
   // import CategoryEditForm from '$lib/features/judging/CategoryEditForm.svelte';
 
   import IconTablerPlus from '~icons/tabler/plus'
   import IconTablerTrash from '~icons/tabler/trash'
   import IconTablerX from '~icons/tabler/x'
   import type { PageProps } from './$types'
+  import CreateCategoryForm from './CreateCategoryForm.svelte'
 
   const { data }: PageProps = $props()
 
   let selectedCategoryId = $state<number | null>(null)
   let addCategoriesModal: HTMLDialogElement
-
   const selectedCategory = $derived(data.categories.find((c) => c.id === selectedCategoryId) || null)
 </script>
 
@@ -68,7 +67,7 @@
               {/if}
             </td>
             <td>
-              <button type="button" class="btn btn-primary h-8 text-white" onclick={() => (selectedCategoryId = category.id)}> Edit </button>
+              <button type="button" class="btn btn-primary h-8 text-white" onclick={() => (selectedCategoryId = category.id)}>Edit</button>
             </td>
             <td class="pl-0">
               <form method="post" action="?/delete">
@@ -86,14 +85,14 @@
 
     <!-- Add Categories Modal -->
     <dialog id="add-categories-modal" class="modal" bind:this={addCategoriesModal}>
-      <div class="modal-box h-[600px] max-w-md lg:max-w-lg">
+      <div class="modal-box h-[625px] max-w-md lg:max-w-lg">
         <div class="flex justify-between">
           <h3 class="mb-4 text-lg font-bold">Add Categories</h3>
           <button class="cursor-pointer" aria-label="Close" onclick={() => addCategoriesModal.close()}>
             <IconTablerX />
           </button>
         </div>
-        <!-- <CategoryCreateForm /> -->
+        <CreateCategoryForm />
         <form method="dialog" class="modal-action">
           <button class="btn">Close</button>
         </form>
@@ -107,8 +106,6 @@
     <div class="bg-base-100 min-h-full w-full max-w-[500px] p-6">
       {#if selectedCategory}
         <!-- <CategoryEditForm {selectedCategory} onClose={() => selectedCategoryId = null} /> -->
-      {:else}
-        <p>No category selected</p>
       {/if}
     </div>
   </div>
