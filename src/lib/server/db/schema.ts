@@ -1,4 +1,4 @@
-import { attendanceStatuses, categoryTypes } from '$lib/constants'
+import { attendanceStatuses, categoryTypes } from '../../constants'
 import { relations, sql, type SQL } from 'drizzle-orm'
 import { blob, check, integer, primaryKey, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
 
