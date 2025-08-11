@@ -1,12 +1,10 @@
 <script lang="ts">
-  // import { deleteCategory } from '$lib/features/judging/actions';
-  // import CategoryEditForm from '$lib/features/judging/CategoryEditForm.svelte';
-
   import IconTablerPlus from '~icons/tabler/plus'
   import IconTablerTrash from '~icons/tabler/trash'
   import IconTablerX from '~icons/tabler/x'
   import type { PageProps } from './$types'
   import CreateCategoryForm from './CreateCategoryForm.svelte'
+  import EditCategoryForm from './EditCategoryForm.svelte'
 
   const { data }: PageProps = $props()
 
@@ -105,7 +103,7 @@
     <label for="category-info-drawer" class="drawer-overlay"></label>
     <div class="bg-base-100 min-h-full w-full max-w-[500px] p-6">
       {#if selectedCategory}
-        <!-- <CategoryEditForm {selectedCategory} onClose={() => selectedCategoryId = null} /> -->
+        <EditCategoryForm category={selectedCategory} onClose={() => (selectedCategoryId = null)} />
       {/if}
     </div>
   </div>
