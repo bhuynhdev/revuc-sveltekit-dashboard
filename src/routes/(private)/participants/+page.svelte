@@ -1,24 +1,22 @@
 <script lang="ts">
-  import type { PageProps } from './$types'
-  import { page } from '$app/state'
   import { goto } from '$app/navigation'
+  import { page } from '$app/state'
   import { attendanceStatuses, DEFAULT_ITEMS_PER_PAGINATION } from '$lib/constants'
+  import type { AttendanceStatus } from '$lib/server/db/types'
   import IconTablerChevronLeft from '~icons/tabler/chevron-left'
   import IconTablerChevronRight from '~icons/tabler/chevron-right'
+  import { listParticipants, listParticipantsStatistics } from './participants.remote'
 
-  const { data }: PageProps = $props()
-  const { totalCount, participants, alltimeStats } = $derived(data)
-  const { confirmed, confirmeddelayedcheckin, attended, waitlist, waitlistattended } = $derived(alltimeStats.participantCountByStatus)
+  const queryQs = $derived(page.url.searchParams.get('q') || null)
+  const attendanceStatusQs = $derived((page.url.searchParams.get('status') || null) as AttendanceStatus | null)
+  const pageNumber = $derived(Number(page.url.searchParams.get('page') ?? 1))
+  const perPage = $derived(Number(page.url.searchParams.get('perpage') ?? DEFAULT_ITEMS_PER_PAGINATION))
+
+  const participantsInfo = $derived(listParticipants({ query: queryQs, attendanceStatus: attendanceStatusQs, pageNumber, perPage }))
+  const participantsStats = listParticipantsStatistics()
 
   let selectedParticipantId = $state<number | null>(null)
-  const participant = $derived(participants.find((p) => p.id == selectedParticipantId))
-
-  const attendanceStatusQs = $derived(page.url.searchParams.get('status') ?? '')
-  const pageNumber = $derived(Number(page.url.searchParams.get('page') ?? 1))
-  const itemsPerPage = $derived(Number(page.url.searchParams.get('perpage') ?? DEFAULT_ITEMS_PER_PAGINATION))
-
-  const currentPageFirstItemIndex = $derived((pageNumber - 1) * itemsPerPage + 1)
-  const currentPageLastItemIndex = $derived(Math.min(currentPageFirstItemIndex + itemsPerPage - 1, totalCount))
+  const selectedParticipant = $derived(participantsInfo.current?.participants.find((p) => p.id == selectedParticipantId))
 
   function goTonextPage() {
     const query = new URLSearchParams(page.url.searchParams.toString())
@@ -48,21 +46,7 @@
     }}
   />
   <div class="drawer-content w-full">
-    <div class="mb-6 grid grid-cols-3 gap-3">
-      <div class="rounded-lg bg-sky-200 p-4">
-        <p class="text-xl font-bold">{confirmed + confirmeddelayedcheckin + attended + waitlistattended}</p>
-        <p class="text-gray-500">Confirmed Attendance</p>
-      </div>
-      <div class="rounded-lg bg-emerald-200 p-4">
-        <p class="text-xl font-bold">{attended + waitlistattended}</p>
-        <p class="text-gray-500">Checked in</p>
-        <p class="text-gray-500 italic">{waitlistattended} from waitlist</p>
-      </div>
-      <div class="rounded-lg bg-amber-200 p-4">
-        <p class="text-xl font-bold">{waitlist}</p>
-        <p class="text-gray-500">Waitlist</p>
-      </div>
-    </div>
+    {@render participantStatsCards()}
     <form
       method="get"
       class="grid grid-flow-col grid-cols-[repeat(auto-fit,minmax(100px,1fr))] items-end gap-2 rounded-lg bg-gray-100 p-4"
@@ -70,14 +54,7 @@
     >
       <label class="fieldset py-0">
         <span class="fieldset-legend pt-0 text-sm">Name &amp; Email</span>
-        <input
-          class="input pb-0"
-          aria-label="Search participant"
-          type="text"
-          name="q"
-          placeholder="Search"
-          value={page.url.searchParams.get('q')}
-        />
+        <input class="input pb-0" aria-label="Search participant" type="text" name="q" placeholder="Search" value={page.url.searchParams.get('q')} />
       </label>
       <label class="fieldset py-0">
         <span class="fieldset-legend pt-0 text-sm">Attendance status</span>
@@ -95,31 +72,7 @@
     <section aria-labelledby="participant-list-heading">
       <div class="my-5 flex items-center gap-16">
         <h2 id="participant-list-heading">Participant list</h2>
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            class="btn btn-sm btn-soft btn-primary"
-            aria-label="Previous page"
-            title="Previous page"
-            onclick={goTopreviousPage}
-            disabled={pageNumber === 1}
-          >
-            <IconTablerChevronLeft />
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm btn-soft btn-primary"
-            aria-label="Next page"
-            title="Next page"
-            onclick={goTonextPage}
-            disabled={currentPageLastItemIndex >= totalCount}
-          >
-            <IconTablerChevronRight />
-          </button>
-          <p class="ml-2 text-sm text-gray-600 italic">
-            {currentPageFirstItemIndex} - {currentPageLastItemIndex} of {totalCount}
-          </p>
-        </div>
+        {@render paginationButtons()}
       </div>
 
       <table aria-labelledby="participant-list-heading" class="table table-auto">
@@ -131,7 +84,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each participants as p}
+          {#each (await participantsInfo).participants as p}
             <tr
               onpointerup={(e) => {
                 if (e.pointerType === 'touch') {
@@ -168,11 +121,65 @@
   <div role="dialog" class="drawer-side">
     <label for="participant-info-drawer" class="drawer-overlay"></label>
     <div class="bg-base-100 min-h-full w-full max-w-[500px] p-6">
-      {#if participant}
-        Participant
+      {#if selectedParticipant}
+        Participant {selectedParticipantId}
       {:else}
         <p>No participant selected</p>
       {/if}
     </div>
   </div>
 </div>
+
+{#snippet participantStatsCards()}
+  {#if participantsStats.current}
+    {@const { confirmed, confirmeddelayedcheckin, attended, waitlist, waitlistattended } = participantsStats.current.participantCountByStatus}
+    <div class="mb-6 grid grid-cols-3 gap-3">
+      <div class="rounded-lg bg-sky-200 p-4">
+        <p class="text-xl font-bold">{confirmed + confirmeddelayedcheckin + attended + waitlistattended}</p>
+        <p class="text-gray-500">Confirmed Attendance</p>
+      </div>
+      <div class="rounded-lg bg-emerald-200 p-4">
+        <p class="text-xl font-bold">{attended + waitlistattended}</p>
+        <p class="text-gray-500">Checked in</p>
+        <p class="text-gray-500 italic">{waitlistattended} from waitlist</p>
+      </div>
+      <div class="rounded-lg bg-amber-200 p-4">
+        <p class="text-xl font-bold">{waitlist}</p>
+        <p class="text-gray-500">Waitlist</p>
+      </div>
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet paginationButtons()}
+  {#if participantsInfo.current}
+    {@const totalCount = participantsInfo.current.totalCount}
+    {@const currentPageFirstItemIndex = (pageNumber - 1) * perPage + 1}
+    {@const currentPageLastItemIndex = Math.min(currentPageFirstItemIndex + perPage - 1, totalCount)}
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        class="btn btn-sm btn-soft btn-primary"
+        aria-label="Previous page"
+        title="Previous page"
+        onclick={goTopreviousPage}
+        disabled={pageNumber === 1}
+      >
+        <IconTablerChevronLeft />
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-soft btn-primary"
+        aria-label="Next page"
+        title="Next page"
+        onclick={goTonextPage}
+        disabled={currentPageLastItemIndex >= totalCount}
+      >
+        <IconTablerChevronRight />
+      </button>
+      <p class="ml-2 text-sm text-gray-600 italic">
+        {currentPageFirstItemIndex} - {currentPageLastItemIndex} of {totalCount}
+      </p>
+    </div>
+  {/if}
+{/snippet}

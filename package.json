@@ -49,7 +49,8 @@
 		"csv-parse": "^6.1.0",
 		"daisyui": "^5.0.50",
 		"drizzle-orm": "^0.40.0",
-		"unplugin-icons": "^22.2.0"
+		"unplugin-icons": "^22.2.0",
+		"valibot": "^1.1.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [

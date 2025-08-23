@@ -1,35 +1,41 @@
-import { attendanceStatuses, DEFAULT_ITEMS_PER_PAGINATION } from '$lib/constants'
-import { participant } from '$lib/server/db/schema'
-import { type AttendanceStatus } from '$lib/server/db/types'
-import { error } from '@sveltejs/kit'
+import * as v from "valibot"
+import { getRequestEvent, query } from "$app/server";
+import { attendanceStatuses, DEFAULT_ITEMS_PER_PAGINATION } from "$lib/constants";
+import { and, eq, like, sql } from "drizzle-orm";
+import { participant } from "$lib/server/db/schema";
 import "@total-typescript/ts-reset/filter-boolean"
-import { and, eq, like, sql } from "drizzle-orm"
-import type { PageServerLoad } from './$types'
+import { error } from "@sveltejs/kit";
+import type { AttendanceStatus } from "$lib/server/db/types";
 
-export const load: PageServerLoad = async ({ locals, url }) => {
-  const db = locals.db
+const listParticipantsSchema = v.object({
+  query: v.nullable(v.string()),
+  attendanceStatus: v.nullable(v.picklist(attendanceStatuses)),
+  pageNumber: v.pipe(v.number(), v.minValue(1)),
+  perPage: v.pipe(v.number(), v.minValue(1)),
+})
 
-  /** Fetch participants based on query string input parameters:
-   *  - query: Search that name and/or email includes the search phrase
-   *  - status: Specific attendance status
-   *  - pageNumber: Pagination
-   */
-  const query = url.searchParams.get("q")
-  const pageNumber = Number(url.searchParams.get("page") || 1)
-  const attendanceStatus = url.searchParams.get("status") as AttendanceStatus
-  const itemsPerPage = Number(url.searchParams.get("perpage") || DEFAULT_ITEMS_PER_PAGINATION)
+/** Fetch participants based on query string input parameters:
+ *  - query: Search that name and/or email includes the search phrase
+ *  - status: Specific attendance status
+ *  - pageNumber: Pagination
+ *  - perPage: How many items per page
+ */
+export const listParticipants = query(listParticipantsSchema, async (args) => {
+  const { locals: { db } } = getRequestEvent()
+  const { query, attendanceStatus, pageNumber, perPage } = args;
 
   const searchCriteria = [
     query && like(participant.nameEmail, `%${query}%`),
     attendanceStatus && eq(participant.attendanceStatus, attendanceStatus)
-  ].filter(Boolean);
+  ].filter(Boolean)
+
   const whereStatement = searchCriteria.length ? and(...searchCriteria) : undefined
 
   const totalCount = await db.$count(participant, whereStatement)
 
   // Constraint `pageNumber` in case user inputs a weird number
-  const maxNumberOfPages = Math.max(Math.ceil(totalCount / itemsPerPage), 1)
-  if (pageNumber > maxNumberOfPages || pageNumber < 1) {
+  const maxNumberOfPages = Math.max(Math.ceil(totalCount / perPage), 1)
+  if (pageNumber > maxNumberOfPages) {
     throw error(400, 'Page number is not valid')
   }
 
@@ -39,15 +45,25 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     .from(participant)
     .where(whereStatement)
     .orderBy(participant.createdAt, participant.id)
-    .limit(itemsPerPage)
-    .offset((pageNumber - 1) * itemsPerPage)
+    .limit(perPage)
+    .offset((pageNumber - 1) * perPage)
     .as('subquery')
-  const participants = await db.select().from(participant).innerJoin(sq, eq(participant.id, sq.id)).orderBy(participant.createdAt, participant.id)
 
-  /**
-   * Calculate some participant statistics, including:
-   *  - Participants count by attendance statuses
-   */
+  const participants = await db.select().from(participant).innerJoin(sq, eq(participant.id, sq.id)).orderBy(participant.createdAt, participant.id)
+  return {
+    totalCount, participants: participants.map(({ participant }) => ({
+      ...participant,
+      availableAttendanceActions: getNextAttendanceActions(participant.attendanceStatus)
+    }))
+  }
+})
+
+/**
+ * Calculate some participant statistics, including:
+ *  - Participants count by attendance statuses
+ */
+export const listParticipantsStatistics = query(async () => {
+  const { locals: { db } } = getRequestEvent()
   const rawStatusCountArray = await db
     .select({ status: participant.attendanceStatus, count: sql<number>`COUNT(*)`.mapWith(Number) })
     .from(participant)
@@ -57,19 +73,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   const participantCountByStatus = Object.fromEntries(attendanceStatuses.map((status) => [status, 0])) as Record<AttendanceStatus, number> // Init with 0s
   rawStatusCountArray.forEach(({ status, count }) => (participantCountByStatus[status] += count))
 
-  return {
-    totalCount,
-    participants: participants.map(({ participant }) => ({
-      ...participant,
-      availableAttendanceActions: getNextAttendanceActions(participant.attendanceStatus)
-    })),
-    alltimeStats: {
-      participantCountByStatus
-    }
-  }
-};
+  return { participantCountByStatus }
+})
 
-export type AttendanceAction = 'CheckIn' | 'ConfirmAttendance' | 'Unconfirm' | 'ToggleLateCheckIn'
+type AttendanceAction = 'CheckIn' | 'ConfirmAttendance' | 'Unconfirm' | 'ToggleLateCheckIn'
 
 /**
  * State machine describing possible transitions given an input attendance status

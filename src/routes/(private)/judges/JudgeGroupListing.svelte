@@ -1,26 +1,42 @@
 <script lang="ts">
-  import type { Judge, JudgeGroupWithJudges } from '$lib/server/db/types'
-  import type { Snippet } from 'svelte'
+  import type { Judge } from '$lib/server/db/types'
   import IconTablerHomeMove from '~icons/tabler/home-move'
   import IconTablerTrash from '~icons/tabler/trash'
   import IconTablerX from '~icons/tabler/x'
+  import { listCategories } from '../categories/categories.remote'
+  import { listJudgeGroups } from './judges.remote'
 
-  type JudgeGroupListingProps = {
-    judgeGroups: JudgeGroupWithJudges[],
-    createJudgeGroupForm: Snippet,
-    moveJudgeForm: Snippet<[Judge]>
-  }
+  const judgeGroups = listJudgeGroups()
 
-  const { judgeGroups, createJudgeGroupForm: judgeGroupCreateForm, moveJudgeForm }: JudgeGroupListingProps = $props()
+  let judgeToMove = $state<Judge | null>(null)
+  let newJudgeGroupChosenCategoryId = $state(1)
 
-  let judgeToMove = $state<Judge | null>()
   let moveJudgeModal: HTMLDialogElement
   let createJudgeGroupModal: HTMLDialogElement
+
+  const suggestedGroupName = $derived.by(() => {
+    /**
+    * Generate group name suggestion when creating new group
+    * Given an input categoryId, generate a suggested name based on the Judge Group name convention
+    */
+    const categoryId = newJudgeGroupChosenCategoryId
+    if (!categoryId || !judgeGroups.current || judgeGroups.current.length === 0) return ''
+
+    // Judge Group name convention (see `resetAndOrganizeJudgeGroups` remote command):
+    // - First char is categoryId converted to ASCII (1 -> A, 2 -> B, etc.)
+    // - Second char is the ordering of this group within the category (1st group of cateogyId 1 -> A1, etc.)
+    // So we just need to count how many groups are already in current category to be able to derive a next name
+    const groupCountOfThisCategory = judgeGroups.current.filter((g) => g.categoryId === categoryId).length
+
+    const firstChar = String.fromCharCode(64 + categoryId)
+    const secondChar = (groupCountOfThisCategory + 1).toString()
+    return `${firstChar}${secondChar}`
+  })
 
 </script>
 
 <div class="grid grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-6">
-  {#each judgeGroups as group}
+  {#each await judgeGroups as group}
     <div class="relative h-72 rounded-xl border border-gray-400 p-4 shadow">
       <p class="ml-2 text-lg font-bold">Group {group.name}</p>
       <p class="my-1 ml-2 text-sm text-gray-600 italic">{group.category.name}</p>
@@ -66,7 +82,7 @@
           <IconTablerX />
         </button>
       </div>
-      {@render judgeGroupCreateForm()}
+      {@render createJudgeGroupForm()}
       <form method="dialog" class="modal-action">
         <button class="btn">Close</button>
       </form>
@@ -92,3 +108,55 @@
     </div>
   </dialog>
 </div>
+
+{#snippet createJudgeGroupForm()}
+  <form method="post" action="/judges?/create-group">
+    <label class="fieldset">
+      <span class="fieldset-legend text-sm">Name</span>
+      <input class="input" name="name" placeholder={suggestedGroupName} value={suggestedGroupName} required />
+      <p class="label">Suggested group name: {suggestedGroupName}</p>
+    </label>
+
+    <label class="fieldset">
+      <span class="fieldset-legend text-sm">Category</span>
+      <select name="categoryId" class="select w-full" required bind:value={newJudgeGroupChosenCategoryId}>
+        {#each await listCategories() as category, i}
+          <option value={category.id} selected={i === 0}>
+            {category.name}
+          </option>
+        {/each}
+      </select>
+    </label>
+
+    <button type="submit" class="btn btn-primary mt-2 ml-auto block text-white"> Submit </button>
+  </form>
+{/snippet}
+
+{#snippet moveJudgeForm(judgeToMove: Judge)}
+  {#if judgeGroups.current}
+    {@const currentGroup = judgeGroups.current.filter((g) => g.id === judgeToMove.judgeGroupId)[0]}
+    {@const applicableJudgeGroups = judgeGroups.current.filter((g) => g.categoryId === judgeToMove.categoryId && g.id !== judgeToMove.judgeGroupId)}
+
+    <p>
+      Current group: {currentGroup?.name} - {currentGroup?.category.name}
+    </p>
+    {#if applicableJudgeGroups?.length}
+      <form method="post" action="?/moveJudge">
+        <input type="hidden" name="judgeId" value={judgeToMove.id} />
+        <label class="fieldset">
+          <span class="fieldset-legend text-sm">New group</span>
+          <select name="newGroupId" class="select w-full" required>
+            {#each applicableJudgeGroups as group, i}
+              <option value={group.id} selected={i === 0}>
+                {group.name} - {group.category.name}
+              </option>
+            {/each}
+          </select>
+        </label>
+        <button type="submit" class="btn btn-primary mt-2 ml-auto block text-white"> Submit </button>
+      </form>
+    {:else}
+      <p>No applicable groups to move to. Consider creating new groups</p>
+    {/if}
+  {/if}
+{/snippet}

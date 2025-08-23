@@ -1,6 +1,6 @@
-import type { Handle } from '@sveltejs/kit';
+import * as schema from "$lib/server/db/schema";
+import type { Handle, HandleValidationError } from '@sveltejs/kit';
 import { drizzle } from 'drizzle-orm/d1';
-import * as schema from "$lib/server/db/schema"
 
 export const handle: Handle = async ({ event, resolve }) => {
   if (!event.platform) {
@@ -12,5 +12,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	const response = await resolve(event);
 	return response;
+};
+
+
+export const handleValidationError: HandleValidationError = ({ event, issues }) => {
+	return {
+		message: 'Nice try, hacker!'
+	};
 };
 
