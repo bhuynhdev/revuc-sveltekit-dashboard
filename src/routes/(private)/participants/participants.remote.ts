@@ -5,7 +5,7 @@ import { and, eq, like, sql } from "drizzle-orm";
 import { participant } from "$lib/server/db/schema";
 import "@total-typescript/ts-reset/filter-boolean"
 import { error } from "@sveltejs/kit";
-import type { AttendanceStatus } from "$lib/server/db/types";
+import type { AttendanceStatus, Participant } from "$lib/server/db/types";
 
 const listParticipantsSchema = v.object({
   query: v.nullable(v.string()),
@@ -141,3 +141,5 @@ function getNextAttendanceActions(currentStatus: AttendanceStatus): Array<Attend
     keyof (typeof ATTENDANCE_STATUS_STATE_MACHINE)[AttendanceStatus]
   >
 }
+
+export type ParticipantDto = Participant & { availableAttendanceActions: ReturnType<typeof getNextAttendanceActions> }

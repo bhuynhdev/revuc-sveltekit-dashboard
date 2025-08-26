@@ -6,6 +6,7 @@
   import IconTablerChevronLeft from '~icons/tabler/chevron-left'
   import IconTablerChevronRight from '~icons/tabler/chevron-right'
   import { listParticipants, listParticipantsStatistics } from './participants.remote'
+    import ParticipantInfoForm from './ParticipantInfoForm.svelte'
 
   const queryQs = $derived(page.url.searchParams.get('q') || null)
   const attendanceStatusQs = $derived((page.url.searchParams.get('status') || null) as AttendanceStatus | null)
@@ -40,9 +41,7 @@
     aria-hidden={true}
     checked={selectedParticipantId !== null}
     onchange={(e) => {
-      if (!e.currentTarget.checked) {
-        selectedParticipantId = null
-      }
+      !e.currentTarget.checked && (selectedParticipantId = null)
     }}
   />
   <div class="drawer-content w-full">
@@ -87,16 +86,11 @@
           {#each (await participantsInfo).participants as p}
             <tr
               onpointerup={(e) => {
-                if (e.pointerType === 'touch') {
-                  selectedParticipantId = p.id
-                }
+                e.pointerType === 'touch' && (selectedParticipantId = p.id)
               }}
             >
               <td>
-                <p>
-                  {p.firstName}
-                  {p.lastName}
-                </p>
+                <p>{`${p.firstName} ${p.lastName}`}</p>
                 <p class="text-gray-500 italic">{p.email}</p>
               </td>
               <td>
@@ -122,7 +116,7 @@
     <label for="participant-info-drawer" class="drawer-overlay"></label>
     <div class="bg-base-100 min-h-full w-full max-w-[500px] p-6">
       {#if selectedParticipant}
-        Participant {selectedParticipantId}
+        <ParticipantInfoForm participant={selectedParticipant} onClose={() => selectedParticipantId = null} />
       {:else}
         <p>No participant selected</p>
       {/if}
