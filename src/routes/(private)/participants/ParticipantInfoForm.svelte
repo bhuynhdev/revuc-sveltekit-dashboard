@@ -3,6 +3,7 @@
   // import { AttendanceStatusBadge } from './AttendanceStatusBadge.svelte'
   import type { Participant } from '$lib/server/db/types'
   import type { ParticipantDto } from './participants.remote'
+    import AttendanceStatusBadge from './AttendanceStatusBadge.svelte'
 
   type ParticipantInfoFormProps = {
     participant: ParticipantDto
@@ -40,7 +41,7 @@
   <header class="flex w-full justify-between">
     <div class="flex items-center gap-2">
       <h2 class="text-base">Participant #{participant.id}</h2>
-      <!-- <AttendanceStatusBadge attendanceStatus={participant.attendanceStatus} /> -->
+      <AttendanceStatusBadge attendanceStatus={participant.attendanceStatus} />
     </div>
     <button aria-label="Close" type="button" onclick={onClose} class="cursor-pointer">
       <IconTablerX width="32" height="32" />

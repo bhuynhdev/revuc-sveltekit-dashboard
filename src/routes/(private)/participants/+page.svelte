@@ -5,8 +5,9 @@
   import type { AttendanceStatus } from '$lib/server/db/types'
   import IconTablerChevronLeft from '~icons/tabler/chevron-left'
   import IconTablerChevronRight from '~icons/tabler/chevron-right'
+  import AttendanceStatusBadge from './AttendanceStatusBadge.svelte'
+  import ParticipantInfoForm from './ParticipantInfoForm.svelte'
   import { listParticipants, listParticipantsStatistics } from './participants.remote'
-    import ParticipantInfoForm from './ParticipantInfoForm.svelte'
 
   const queryQs = $derived(page.url.searchParams.get('q') || null)
   const attendanceStatusQs = $derived((page.url.searchParams.get('status') || null) as AttendanceStatus | null)
@@ -94,8 +95,7 @@
                 <p class="text-gray-500 italic">{p.email}</p>
               </td>
               <td>
-                {p.attendanceStatus}
-                <!-- <AttendanceStatusBadge attendanceStatus={p.attendanceStatus} /> -->
+                <AttendanceStatusBadge attendanceStatus={p.attendanceStatus} />
               </td>
               <td class="hidden sm:table-cell">
                 <button
