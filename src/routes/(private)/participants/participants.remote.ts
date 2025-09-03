@@ -1,11 +1,11 @@
 import * as v from "valibot"
-import { getRequestEvent, query } from "$app/server";
+import { form, getRequestEvent, query } from "$app/server";
 import { attendanceStatuses, DEFAULT_ITEMS_PER_PAGINATION } from "$lib/constants";
 import { and, eq, like, sql } from "drizzle-orm";
 import { participant } from "$lib/server/db/schema";
 import "@total-typescript/ts-reset/filter-boolean"
 import { error } from "@sveltejs/kit";
-import type { AttendanceStatus, Participant } from "$lib/server/db/types";
+import type { AttendanceStatus, Participant, ParticipantUpdate } from "$lib/server/db/types";
 
 const listParticipantsSchema = v.object({
   query: v.nullable(v.string()),
@@ -76,6 +76,46 @@ export const listParticipantsStatistics = query(async () => {
   return { participantCountByStatus }
 })
 
+export const updateParticipantInfo = form(async (formData) => {
+  const { locals: { db } } = getRequestEvent()
+  const now = new Date().toISOString()
+  const { participantId, ...data } = Object.fromEntries(formData)
+  const pId = parseInt(participantId.toString())
+
+  await db
+    .update(participant)
+    .set({ ...data, updatedAt: now })
+    .where(eq(participant.id, pId))
+    .returning()
+})
+
+export const advanceAttendanceStatus = form(async (formData) => {
+  const { locals: { db } } = getRequestEvent()
+  const now = new Date().toISOString()
+  const { participantId, attendanceAction } = Object.fromEntries(formData)
+  const pId = parseInt(participantId.toString())
+
+  const [participantInfo] = await db.select().from(participant).where(eq(participant.id, pId))
+  const currentAttendanceStatus = participantInfo.attendanceStatus
+
+  const newAttendanceStatus = determineNextAttendanceStatus({ currentStatus: currentAttendanceStatus, action: attendanceAction as AttendanceAction })
+
+  const updateContent: ParticipantUpdate = { updatedAt: now }
+  if (newAttendanceStatus) {
+    updateContent.attendanceStatus = newAttendanceStatus
+    if (attendanceAction === 'CheckIn') {
+      updateContent.checkedInAt = now
+    } else if (attendanceAction === 'ConfirmAttendance') {
+      updateContent.lastConfirmedAttendanceAt = now
+    }
+  }
+
+  if (newAttendanceStatus) {
+    await db.update(participant).set(updateContent).where(eq(participant.id, pId))
+  }
+})
+
+
 type AttendanceAction = 'CheckIn' | 'ConfirmAttendance' | 'Unconfirm' | 'ToggleLateCheckIn'
 
 /**
@@ -143,3 +183,4 @@ function getNextAttendanceActions(currentStatus: AttendanceStatus): Array<Attend
 }
 
 export type ParticipantDto = Participant & { availableAttendanceActions: ReturnType<typeof getNextAttendanceActions> }
+

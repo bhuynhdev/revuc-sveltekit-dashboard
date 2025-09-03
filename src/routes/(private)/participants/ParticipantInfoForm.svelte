@@ -2,8 +2,8 @@
   import IconTablerX from '~icons/tabler/x'
   // import { AttendanceStatusBadge } from './AttendanceStatusBadge.svelte'
   import type { Participant } from '$lib/server/db/types'
-  import type { ParticipantDto } from './participants.remote'
-    import AttendanceStatusBadge from './AttendanceStatusBadge.svelte'
+  import AttendanceStatusBadge from './AttendanceStatusBadge.svelte'
+  import { advanceAttendanceStatus, updateParticipantInfo, type ParticipantDto } from './participants.remote'
 
   type ParticipantInfoFormProps = {
     participant: ParticipantDto
@@ -71,7 +71,7 @@
     </p>
   </section>
 
-  <form id="participant-profile" method="post" class="border-base-300 mt-4 rounded-md border">
+  <form id="participant-profile" {...updateParticipantInfo} class="border-base-300 mt-4 rounded-md border">
     <header class="bg-gray-200 px-4 py-3">
       <h3 class="font-semibold">Profile</h3>
     </header>
@@ -110,7 +110,7 @@
     </div>
   </form>
 
-  <form method="post" class="border-base-300 rounded-md border-1">
+  <form {...advanceAttendanceStatus} class="border-base-300 rounded-md border-1">
     <header class="bg-gray-200 px-4 py-3">
       <h3 class="font-semibold">Attendance Status</h3>
     </header>
