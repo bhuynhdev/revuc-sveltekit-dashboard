@@ -4,7 +4,7 @@
   import IconTablerTrash from '~icons/tabler/trash'
   import IconTablerX from '~icons/tabler/x'
   import { listCategories } from '../categories/categories.remote'
-  import { listJudgeGroups } from './judges.remote'
+  import { createJudgeGroup, deleteEmptyJudgeGroup, listJudgeGroups } from './judges.remote'
 
   const judgeGroups = listJudgeGroups()
 
@@ -42,7 +42,7 @@
       <p class="my-1 ml-2 text-sm text-gray-600 italic">{group.category.name}</p>
 
       {#if group.judges.length === 0}
-        <form method="post" action="?/delete" class="tooltip absolute top-4 right-4" data-tip={`Delete empty group ${group.name}`}>
+        <form class="tooltip absolute top-4 right-4" data-tip={`Delete empty group ${group.name}`} {...deleteEmptyJudgeGroup}>
           <input type="hidden" name="groupId" value={group.id} />
           <button type="submit" class="cursor-pointer" aria-label={`Delete empty group ${group.name}`}>
             <IconTablerTrash width={24} height={24} />
@@ -110,7 +110,7 @@
 </div>
 
 {#snippet createJudgeGroupForm()}
-  <form method="post" action="/judges?/create-group">
+  <form {...createJudgeGroup}>
     <label class="fieldset">
       <span class="fieldset-legend text-sm">Name</span>
       <input class="input" name="name" placeholder={suggestedGroupName} value={suggestedGroupName} required />

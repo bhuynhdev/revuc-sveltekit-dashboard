@@ -1,10 +1,9 @@
 <script lang="ts">
-  import type { Judge } from '$lib/server/db/types'
   import IconTablerStack2 from '~icons/tabler/stack-2'
   import IconTablerTrashX from '~icons/tabler/trash-x'
   import JudgeGroupListing from './JudgeGroupListing.svelte'
-  import { listJudgeGroups, listJudges } from './judges.remote'
   import JudgeListing from './JudgeListing.svelte'
+  import { clearJudgeGroups, listJudgeGroups, listJudges, resetAndOrganizeJudgeGroups } from './judges.remote'
 
   const judges = listJudges()
   const judgeGroups = listJudgeGroups()
@@ -16,7 +15,7 @@
   </div>
   <div class="flex gap-4">
     <!-- <AddJudgesButtonAndModal /> -->
-    <form action="?/organizeJudgeGroup" method="post">
+    <form {...resetAndOrganizeJudgeGroups}>
       <button type="submit" class="btn btn-primary btn-outline w-fit">
         <span aria-hidden={true}>
           <IconTablerStack2 />
@@ -24,7 +23,7 @@
         {judgeGroups.current?.length ? 'Re-generate judge groups' : 'Generate judge groups'}
       </button>
     </form>
-    <form action="?/clearJudgeGroups" method="post" hidden={!judgeGroups.current?.length}>
+    <form {...clearJudgeGroups} hidden={!judgeGroups.current?.length}>
       <button type="submit" class="btn btn-error btn-outline w-fit">
         <span aria-hidden={true}>
           <IconTablerTrashX />
