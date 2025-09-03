@@ -1,6 +1,7 @@
 <script lang="ts">
   import { categoryTypes } from '$lib/constants'
   import IconTablerInfoCircle from '~icons/tabler/info-circle'
+    import { createCategoriesBulk, createCategory } from './categories.remote'
 
   let bulkEntryFormRef: HTMLFormElement
 </script>
@@ -18,7 +19,7 @@
 </div>
 
 {#snippet singleEntryForm()}
-  <form method="post" class="space-y-4" action="/categories?/createSingle">
+  <form {...createCategory} class="space-y-4">
     <label class="grid grid-cols-1 items-center gap-2 md:grid-cols-[3rem_1fr]">
       <span class="text-sm">Name</span>
       <input class="input" name="categoryName" placeholder="Best Education Hack" required />
@@ -39,7 +40,7 @@
 {/snippet}
 
 {#snippet bulkEntryForm()}
-  <form method="post" class="space-y-3" action="/categories?/createBulk" enctype="multipart/form-data" bind:this={bulkEntryFormRef}>
+  <form {...createCategoriesBulk} class="space-y-3" enctype="multipart/form-data" bind:this={bulkEntryFormRef}>
     <p>Extract categories from DevPost Projects CSV</p>
     <input type="file" name="devPostProjectsFile" class="file-input" aria-label="Upload DevPost Projects CSV" />
     <p>Or enter categories as comma-separated strings</p>

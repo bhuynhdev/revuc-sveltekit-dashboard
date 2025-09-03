@@ -1,7 +1,8 @@
 <script lang="ts">
   import { categoryTypes } from '$lib/constants'
-    import type { Category } from '$lib/server/db/types'
+  import type { Category } from '$lib/server/db/types'
   import IconTablerX from '~icons/tabler/x'
+  import { updateCategory } from './categories.remote'
 
   interface EditCategoryFormProps {
     category: Category // The category object that we're currently editing
@@ -19,7 +20,7 @@
     </button>
   </header>
 
-  <form method="post" class="border-base-300 mt-4 rounded-md border" action="/categories?/edit">
+  <form {...updateCategory} class="border-base-300 mt-4 rounded-md border">
     <header class="bg-gray-200 px-4 py-3">
       <h3 class="font-semibold">Category Info</h3>
     </header>

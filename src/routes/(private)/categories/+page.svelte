@@ -1,16 +1,15 @@
 <script lang="ts">
+  import type { Category } from '$lib/server/db/types'
   import IconTablerPlus from '~icons/tabler/plus'
   import IconTablerTrash from '~icons/tabler/trash'
   import IconTablerX from '~icons/tabler/x'
-  import type { PageProps } from './$types'
   import CreateCategoryForm from './CreateCategoryForm.svelte'
   import EditCategoryForm from './EditCategoryForm.svelte'
+  import { deleteCategory, listCategories } from './categories.remote'
 
-  const { data }: PageProps = $props()
-
-  let selectedCategoryId = $state<number | null>(null)
+  // let selectedCategoryId = $state<number | null>(null)
   let addCategoriesModal: HTMLDialogElement
-  const selectedCategory = $derived(data.categories.find((c) => c.id === selectedCategoryId) || null)
+  let selectedCategory = $state<Category | null>(null)
 </script>
 
 <div class="drawer drawer-end m-auto flex flex-col items-center justify-center gap-6">
@@ -20,9 +19,9 @@
     type="checkbox"
     class="drawer-toggle"
     hidden
-    checked={selectedCategoryId !== null}
+    checked={selectedCategory !== null}
     onchange={(e) => {
-      if (selectedCategoryId !== null && !e.currentTarget.checked) selectedCategoryId = null
+      if (selectedCategory !== null && !e.currentTarget.checked) selectedCategory = null
     }}
   />
 
@@ -50,7 +49,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each data.categories as category}
+        {#each await listCategories() as category}
           <tr>
             <td>{category.name}</td>
             <td>
@@ -65,10 +64,10 @@
               {/if}
             </td>
             <td>
-              <button type="button" class="btn btn-primary h-8 text-white" onclick={() => (selectedCategoryId = category.id)}>Edit</button>
+              <button type="button" class="btn btn-primary h-8 text-white" onclick={() => (selectedCategory = category)}>Edit</button>
             </td>
             <td class="pl-0">
-              <form method="post" action="?/delete">
+              <form {...deleteCategory}>
                 <input type="hidden" name="categoryId" value={category.id} />
                 <button type="submit" class="btn btn-error btn-soft h-8" aria-label="Delete">
                   <span class="hidden md:inline">Delete </span>
@@ -103,7 +102,7 @@
     <label for="category-info-drawer" class="drawer-overlay"></label>
     <div class="bg-base-100 min-h-full w-full max-w-[500px] p-6">
       {#if selectedCategory}
-        <EditCategoryForm category={selectedCategory} onClose={() => (selectedCategoryId = null)} />
+        <EditCategoryForm category={selectedCategory} onClose={() => (selectedCategory = null)} />
       {/if}
     </div>
   </div>
