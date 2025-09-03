@@ -4,7 +4,7 @@
   import IconTablerTrash from '~icons/tabler/trash'
   import IconTablerX from '~icons/tabler/x'
   import { listCategories } from '../categories/categories.remote'
-  import { createJudgeGroup, deleteEmptyJudgeGroup, listJudgeGroups } from './judges.remote'
+  import { createJudgeGroup, deleteEmptyJudgeGroup, listJudgeGroups, moveJudge } from './judge-groups.remote'
 
   const judgeGroups = listJudgeGroups()
 
@@ -141,7 +141,7 @@
       Current group: {currentGroup?.name} - {currentGroup?.category.name}
     </p>
     {#if applicableJudgeGroups?.length}
-      <form method="post" action="?/moveJudge">
+      <form {...moveJudge}>
         <input type="hidden" name="judgeId" value={judgeToMove.id} />
         <label class="fieldset">
           <span class="fieldset-legend text-sm">New group</span>

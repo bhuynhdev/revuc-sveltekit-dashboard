@@ -3,7 +3,8 @@
   import IconTablerTrashX from '~icons/tabler/trash-x'
   import JudgeGroupListing from './JudgeGroupListing.svelte'
   import JudgeListing from './JudgeListing.svelte'
-  import { clearJudgeGroups, listJudgeGroups, listJudges, resetAndOrganizeJudgeGroups } from './judges.remote'
+  import { clearJudgeGroups, listJudgeGroups, resetAndOrganizeJudgeGroups } from './judge-groups.remote'
+  import { listJudges } from './judges.remote'
 
   const judges = listJudges()
   const judgeGroups = listJudgeGroups()

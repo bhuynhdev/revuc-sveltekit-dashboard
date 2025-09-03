@@ -87,4 +87,16 @@ export const resetAndOrganizeJudgeGroups = form(async () => {
 	}
 })
 
+export const moveJudge = form(async (form) => {
+  const { locals: { db } } = getRequestEvent()
+	const judgeId = Number(form.get('judgeId'))
+	const newGroupId = Number(form.get('newGroupId'))
+	const [judgeToMove] = await db.select().from(judge).where(eq(judge.id, judgeId))
+	const [newGroup] = await db.select().from(judgeGroup).where(eq(judgeGroup.id, newGroupId))
+	if (judgeToMove.categoryId !== newGroup.categoryId) {
+		throw Error(`Judge ${judgeId} of category ${judgeToMove.categoryId} cannot move to group of category ${newGroup.categoryId}`)
+	}
 
+	await db.update(judge).set({ judgeGroupId: newGroupId }).where(eq(judge.id, judgeId))
+  await listJudgeGroups().refresh()
+})
