@@ -45,7 +45,7 @@ export type JudgeWithCategory = ResultWithRelation<'judge', { category: true }>
 export type NewJudge = typeof schema.judge.$inferInsert
 
 export type Project = typeof schema.project.$inferSelect
-export type ProjectWithSubmission = ResultWithRelation<'project', { submissions: true }>
+export type ProjectWithSubmissions = ResultWithRelation<'project', { submissions: true }>
 export type NewProject = typeof schema.project.$inferInsert
 
 export type Assignment = typeof schema.assignment.$inferSelect
