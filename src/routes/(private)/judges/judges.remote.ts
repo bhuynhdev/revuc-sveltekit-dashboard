@@ -1,7 +1,7 @@
 import { form, getRequestEvent, query } from '$app/server';
 import { judge } from '$lib/server/db/schema';
 import { parse } from 'csv-parse/sync';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 export const listJudges = query(async () => {
   const { locals: { db } } = getRequestEvent()
@@ -44,7 +44,13 @@ export const createJudgesBulk = form(async (form) => {
   const BATCH_SIZE = 30;
   for (let i = 0; i < judgesInput.length; i += BATCH_SIZE) {
     const batch = judgesInput.slice(i, i + BATCH_SIZE);
-    await db.insert(judge).values(batch);
+    await db.insert(judge).values(batch).onConflictDoUpdate({
+      target: judge.email,
+      set: {
+        name: sql.raw(`excluded.${judge.name.name}`),
+        categoryId: sql.raw(`excluded.${judge.categoryId.name}`)
+      }
+    });
   }
 
   await listJudges().refresh()
