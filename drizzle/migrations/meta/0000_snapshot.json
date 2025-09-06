@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d67070f2-b557-4550-826e-5f89e21275ce",
+  "id": "3bf09b96-0edd-49f1-a308-26a87151c3f8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "assignment": {
@@ -265,7 +265,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "judge_judge_group_id_judge_group_id_fk": {
@@ -323,7 +323,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -790,7 +790,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

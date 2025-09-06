@@ -68,7 +68,7 @@ export const judgeGroup = sqliteTable('judge_group', {
   id: integer('id').primaryKey(),
   name: text('name').notNull(),
   categoryId: integer('category_id')
-    .references(() => category.id)
+    .references(() => category.id, { onDelete: 'cascade' })
     .notNull()
 })
 
@@ -77,8 +77,8 @@ export const judge = sqliteTable('judge', {
   email: text('email').unique().notNull(),
   name: text('name').notNull(),
   categoryId: integer('category_id')
-    .references(() => category.id, { onDelete: 'set null' })
-    .notNull(),
+    .notNull()
+    .references(() => category.id, { onDelete: 'cascade' }),
   judgeGroupId: integer('judge_group_id').references(() => judgeGroup.id, { onDelete: 'set null' })
 })
 
@@ -117,7 +117,7 @@ export const submission = sqliteTable(
       .references(() => project.id, { onDelete: 'cascade' }),
     categoryId: integer('category_id')
       .notNull()
-      .references(() => category.id, { onDelete: 'set null' })
+      .references(() => category.id, { onDelete: 'cascade' })
   },
   (table) => [unique('project_and_category').on(table.projectId, table.categoryId)]
 )

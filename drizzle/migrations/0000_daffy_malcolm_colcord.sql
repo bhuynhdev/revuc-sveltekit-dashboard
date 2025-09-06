@@ -34,7 +34,7 @@ CREATE TABLE `judge` (
 	`name` text NOT NULL,
 	`category_id` integer NOT NULL,
 	`judge_group_id` integer,
-	FOREIGN KEY (`category_id`) REFERENCES `category`(`id`) ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY (`category_id`) REFERENCES `category`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`judge_group_id`) REFERENCES `judge_group`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
@@ -43,7 +43,7 @@ CREATE TABLE `judge_group` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`category_id` integer NOT NULL,
-	FOREIGN KEY (`category_id`) REFERENCES `category`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`category_id`) REFERENCES `category`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `mail_campaign` (
@@ -112,7 +112,7 @@ CREATE TABLE `project_submission` (
 	`project_id` integer NOT NULL,
 	`category_id` integer NOT NULL,
 	FOREIGN KEY (`project_id`) REFERENCES `project`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`category_id`) REFERENCES `category`(`id`) ON UPDATE no action ON DELETE set null
+	FOREIGN KEY (`category_id`) REFERENCES `category`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `project_and_category` ON `project_submission` (`project_id`,`category_id`);--> statement-breakpoint
