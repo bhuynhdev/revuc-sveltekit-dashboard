@@ -125,3 +125,7 @@ CREATE TABLE `user` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);
+
+--> statement-breakpoint
+-- Insert some default data
+INSERT INTO `category` (name, type) VALUES ('General', 'general');

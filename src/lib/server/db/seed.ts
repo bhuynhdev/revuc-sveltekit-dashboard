@@ -13,7 +13,7 @@ async function developmentSeed() {
 
 	const SEED = 1234
 
-	await reset(db, { participant, category, judge, judgeGroup, project, submission })
+	await reset(db, { participant, judge, judgeGroup, project, submission })
 
 	const categorySeeds: NewCategory[] = [
 		{ type: 'general', name: 'General' },
@@ -32,7 +32,7 @@ async function developmentSeed() {
 		{ type: 'mlh', name: 'Best Use of Gemini API' },
 		{ type: 'mlh', name: 'Best Use of MongoDB Atlas' }
 	]
-	await db.insert(category).values(categorySeeds)
+	await db.insert(category).values(categorySeeds).onConflictDoNothing()
 
 	await seed(db, { participant, judge }, { seed: SEED }).refine((f) => {
 		return {
