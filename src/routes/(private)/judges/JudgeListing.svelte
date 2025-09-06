@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { JudgeWithCategory } from '$lib/server/db/types'
   import IconTablerTrash from '~icons/tabler/trash'
-  import { listJudges } from './judges.remote'
+  import { listJudges, updateJudge } from './judges.remote'
   import { listCategories } from '../categories/categories.remote'
   import IconTablerX from '~icons/tabler/x'
 
@@ -102,7 +102,7 @@
         <IconTablerX width="32" height="32" />
       </button>
     </header>
-    <form method="post" class="border-base-300 mt-4 rounded-md border">
+    <form {...updateJudge} class="border-base-300 mt-4 rounded-md border">
       <header class="bg-gray-200 px-4 py-3">
         <h3 class="font-semibold">Judge Info</h3>
       </header>
