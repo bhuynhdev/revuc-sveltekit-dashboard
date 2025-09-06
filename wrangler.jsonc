@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "revuc-cloudflare",
+	"name": "revuc-sv-admin",
   "main": ".output/server/index.mjs",
 	"compatibility_date": "2025-08-01",
 	"compatibility_flags": ["nodejs_compat"],
