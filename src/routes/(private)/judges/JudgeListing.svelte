@@ -86,7 +86,7 @@
     <label for="judge-info-drawer" class="drawer-overlay"></label>
     <div class="bg-base-100 min-h-full w-full max-w-[500px] p-6">
       {#if judgeToEdit}
-        {@render editJudgeForm(judgeToEdit, closeDrawer)}
+        {@render judgeEditForm(judgeToEdit, closeDrawer)}
       {:else}
         <p>No judge selected</p>
       {/if}
@@ -94,7 +94,7 @@
   </div>
 </div>
 
-{#snippet editJudgeForm(judge: JudgeWithCategory, onClose: () => void)}
+{#snippet judgeEditForm(judge: JudgeWithCategory, onClose: () => void)}
   <section>
     <header class="flex w-full justify-between">
       <h3 class="text-lg font-bold">Edit Judge</h3>
