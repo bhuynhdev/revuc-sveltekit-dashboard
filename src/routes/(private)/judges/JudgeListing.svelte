@@ -114,7 +114,7 @@
         </label>
         <label class="fieldset">
           <span class="fieldset-legend text-sm">Email</span>
-          <input type="email" class="input w-full" name="email" value="judge.email}" required />
+          <input type="email" class="input w-full" name="email" value={judge.email} required />
         </label>
         <label class="fieldset">
           <span class="fieldset-legend text-sm">Category</span>
