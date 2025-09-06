@@ -1,5 +1,5 @@
 import { form, getRequestEvent, query } from '$app/server';
-import { judge, judgeGroup } from '$lib/server/db/schema';
+import { judge } from '$lib/server/db/schema';
 import { parse } from 'csv-parse/sync';
 import { eq } from 'drizzle-orm';
 
@@ -31,36 +31,44 @@ export const createJudgesBulk = form(async (form) => {
   }
 
   const csvContent = csvText || (await csvFile.text())
-  const judgesInput: Array<{ name: string; email: string; categoryId: number }> = parse(csvContent, {
+  const judgesParseResult: Array<{ name: string; email: string; categoryId?: number }> = parse(csvContent, {
     columns: ['name', 'email', 'categoryId'],
     skip_empty_lines: true,
+    relaxColumnCountLess: true, // Allow not passing categoryId field
     cast: (value, context) => (context.column === 'categoryId' ? Number(value) : String(value))
   })
 
-  await db.insert(judge).values(judgesInput)
+  const judgesInput = judgesParseResult.map(j => ({ categoryId: j.categoryId || 1, ...j }))
+
+  // Split into batch because Cloudflare D1 has limit on SQL statement size
+  const BATCH_SIZE = 30;
+  for (let i = 0; i < judgesInput.length; i += BATCH_SIZE) {
+    const batch = judgesInput.slice(i, i + BATCH_SIZE);
+    await db.insert(judge).values(batch);
+  }
 
   await listJudges().refresh()
 })
 
 export const updateJudge = form(async (form) => {
   const { locals: { db } } = getRequestEvent()
-	const judgeId = form.get('judgeId') as string
-	const { name, email, categoryId } = Object.fromEntries(form)
+  const judgeId = form.get('judgeId') as string
+  const { name, email, categoryId } = Object.fromEntries(form)
 
-	await db
-		.update(judge)
-		.set({
-			name: String(name),
-			email: String(email),
-			categoryId: Number(categoryId)
-		})
-		.where(eq(judge.id, Number(judgeId)))
+  await db
+    .update(judge)
+    .set({
+      name: String(name),
+      email: String(email),
+      categoryId: Number(categoryId)
+    })
+    .where(eq(judge.id, Number(judgeId)))
   await listJudges().refresh()
 })
 
 export const deleteJudge = form(async (form) => {
   const { locals: { db } } = getRequestEvent()
-	const judgeId = form.get('judgeId') as string
-	await db.delete(judge).where(eq(judge.id, Number(judgeId)))
+  const judgeId = form.get('judgeId') as string
+  await db.delete(judge).where(eq(judge.id, Number(judgeId)))
   await listJudges().refresh()
 })
