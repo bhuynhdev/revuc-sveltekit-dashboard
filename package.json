@@ -48,6 +48,7 @@
 		"@iconify-json/tabler": "^1.2.20",
 		"@libsql/client": "^0.14.0",
 		"csv-parse": "^6.1.0",
+		"csv-stringify": "^6.6.0",
 		"daisyui": "^5.0.50",
 		"drizzle-orm": "^0.40.0",
 		"nanoid": "^5.1.5",
