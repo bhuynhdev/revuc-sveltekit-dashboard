@@ -41,7 +41,7 @@ export const createJudgesBulk = form(async (form) => {
   const judgesInput = judgesParseResult.map(j => ({ categoryId: j.categoryId || 1, ...j }))
 
   // Split into batch because Cloudflare D1 has limit on SQL statement size
-  const BATCH_SIZE = 30;
+  const BATCH_SIZE = 15;
   for (let i = 0; i < judgesInput.length; i += BATCH_SIZE) {
     const batch = judgesInput.slice(i, i + BATCH_SIZE);
     await db.insert(judge).values(batch).onConflictDoUpdate({
