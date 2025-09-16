@@ -1,5 +1,5 @@
 import { form, getRequestEvent, query } from '$app/server';
-import { judge } from '$lib/server/db/schema';
+import { category, judge } from '$lib/server/db/schema';
 import { parse } from 'csv-parse/sync';
 import { eq, sql } from 'drizzle-orm';
 
@@ -31,14 +31,17 @@ export const createJudgesBulk = form(async (form) => {
   }
 
   const csvContent = csvText || (await csvFile.text())
-  const judgesParseResult: Array<{ name: string; email: string; categoryId?: number }> = parse(csvContent, {
-    columns: ['name', 'email', 'categoryId'],
+  const judgesParseResult: Array<{ name: string; email: string; categoryName?: string }> = parse(csvContent, {
+    columns: ['name', 'email', 'categoryName'],
     skip_empty_lines: true,
     relaxColumnCountLess: true, // Allow not passing categoryId field
-    cast: (value, context) => (context.column === 'categoryId' ? Number(value) : String(value))
+    // cast: (value, context) => (context.column === 'categoryId' ? Number(value) : String(value))
   })
 
-  const judgesInput = judgesParseResult.map(j => ({ categoryId: j.categoryId || 1, ...j }))
+  const allCategories = await db.select({ id: category.id, name: category.name }).from(category)
+  const categoryNameToIdMap = new Map(allCategories.map(c => [c.name, c.id]));
+
+  const judgesInput = judgesParseResult.map(j => ({ categoryId: categoryNameToIdMap.get(j.categoryName || 'General') || 1, ...j }))
 
   // Split into batch because Cloudflare D1 has limit on SQL statement size
   const BATCH_SIZE = 15;
