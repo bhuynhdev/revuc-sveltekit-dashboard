@@ -1,9 +1,10 @@
 <script lang="ts">
   import IconTablerStack2 from '~icons/tabler/stack-2'
   import { assignSubmissionsToJudgeGroups, listAssignments } from './assignments.remote'
-  import type { AssignmentDto } from '$lib/server/db/types'
 
   const assignments = listAssignments()
+
+  type AssignmentDto = NonNullable<typeof assignments.current>[number]
 
   const assignmentsByJudgeGroup = $derived.by(() =>
     assignments.current?.reduce((map, curr) => {
@@ -14,7 +15,7 @@
   )
 
   const judgeGroupsWithAssignments = $derived(
-    Array.from(assignmentsByJudgeGroup.values()).toSorted((a, b) => a.judgeGroup.name.localeCompare(b.judgeGroup.name))
+    Array.from(assignmentsByJudgeGroup!.values()).toSorted((a, b) => a.judgeGroup.name.localeCompare(b.judgeGroup.name))
   )
 </script>
 
@@ -41,7 +42,7 @@
     <div class="grid grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-6">
       {#each judgeGroupsWithAssignments as judgeGroup}
         <div class="relative h-fit rounded-xl border border-gray-400 p-4 shadow">
-          <p class="ml-2 text-lg font-bold">Group {judgeGroup.judgeGroup.name}</p>
+          <p class="ml-2 text-lg font-bold">Group {judgeGroup.judgeGroup.name} ({judgeGroup.judgeGroup.judges.length})</p>
           <p class="ml-2 text-sm font-italic">
             {judgeGroup.judgeGroup.category.name} ({judgeGroup.assignments.length})
           </p>

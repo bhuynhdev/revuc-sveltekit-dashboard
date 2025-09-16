@@ -11,7 +11,7 @@ export const listAssignments = query(async () => {
     {
       with: {
         submission: { with: { project: true } },
-        judgeGroup: { with: { category: true } }
+        judgeGroup: { with: { category: true, judges: true } }
       },
     })
 })
