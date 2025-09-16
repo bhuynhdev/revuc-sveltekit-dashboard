@@ -39,7 +39,7 @@
                 <a href="/assignments" class="px-4 py-2">Project assignments</a>
               </li>
               <li>
-                <a href="/prizing" class="px-4 py-2">Prizing</a>
+                <a href="/scoring" class="px-4 py-2">Scoring</a>
               </li>
             </ul>
           </details>
