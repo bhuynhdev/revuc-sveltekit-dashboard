@@ -1,12 +1,11 @@
 import { getRequestEvent } from "$app/server";
-import { judge } from "$lib/server/db/schema";
 
 export async function GET() {
   const { locals: { db } } = getRequestEvent()
-  const allJudges = await db.select().from(judge)
+  const allJudges = await db.query.judge.findMany({ with: { category: true } })
 
   const csv = allJudges
-    .map(j => [j.name, j.email, j.categoryId].join(','))
+    .map(j => [j.name, j.email, j.category.name].join(','))
     .join('\n')
 
   return new Response(csv, {
