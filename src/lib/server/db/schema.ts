@@ -1,6 +1,7 @@
 import { attendanceStatuses, categoryTypes } from '../../constants'
 import { relations, sql, type SQL } from 'drizzle-orm'
 import { blob, check, integer, primaryKey, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
+import { nanoid } from 'nanoid'
 
 export const event = sqliteTable(
   'event',
@@ -74,6 +75,7 @@ export const judgeGroup = sqliteTable('judge_group', {
 
 export const judge = sqliteTable('judge', {
   id: integer('id').primaryKey(),
+  uuid: text('uuid').unique().notNull().$defaultFn(nanoid),
   email: text('email').unique().notNull(),
   name: text('name').notNull(),
   categoryId: integer('category_id')
@@ -122,9 +124,10 @@ export const submission = sqliteTable(
   (table) => [unique('project_and_category').on(table.projectId, table.categoryId)]
 )
 
-export const submissionsRelations = relations(submission, ({ one }) => ({
+export const submissionsRelations = relations(submission, ({ one, many }) => ({
   project: one(project, { fields: [submission.projectId], references: [project.id] }),
-  category: one(category, { fields: [submission.categoryId], references: [category.id] })
+  category: one(category, { fields: [submission.categoryId], references: [category.id] }),
+  evaluations: many(evaluation),
 }))
 
 export const assignment = sqliteTable('assignment', {
@@ -137,6 +140,21 @@ export const assignment = sqliteTable('assignment', {
 export const assignmentRelations = relations(assignment, ({ one }) => ({
   submission: one(submission, { fields: [assignment.submissionId], references: [submission.id] }),
   judgeGroup: one(judgeGroup, { fields: [assignment.judgeGroupId], references: [judgeGroup.id] }),
+}))
+
+export const evaluation = sqliteTable('evaluation', {
+  submissionId: integer('submission_id').notNull().references(() => submission.id, { onDelete: 'cascade' }),
+  judgeId: integer('judge_id').notNull().references(() => judge.id, { onDelete: 'cascade' }),
+  score1: integer('score1').notNull().default(0),
+  score2: integer('score2').notNull().default(0),
+  score3: integer('score3').notNull().default(0),
+  categoryScore: integer('category_score').notNull().default(0)
+},
+  (table) => [primaryKey({ columns: [table.submissionId, table.judgeId] })]
+)
+
+export const evaluationRelations = relations(evaluation, ({ one }) => ({
+  submission: one(submission, { fields: [evaluation.submissionId], references: [submission.id] })
 }))
 
 export const mailCampaign = sqliteTable('mail_campaign', {

@@ -67,7 +67,8 @@ async function developmentSeed() {
 					email: f.email(),
 					name: f.fullName(),
 					categoryId: f.int({ minValue: 1, maxValue: categorySeeds.filter((c) => c.type !== 'mlh').length }),
-					judgeGroupId: f.default({ defaultValue: null })
+					judgeGroupId: f.default({ defaultValue: null }),
+					uuid: f.default({ defaultValue: undefined }),
 				}
 			}
 		}

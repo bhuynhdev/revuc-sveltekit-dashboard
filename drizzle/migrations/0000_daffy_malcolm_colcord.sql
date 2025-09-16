@@ -13,6 +13,18 @@ CREATE TABLE `category` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `category_name_unique` ON `category` (`name`);--> statement-breakpoint
+CREATE TABLE `evaluation` (
+	`submission_id` integer NOT NULL,
+	`judge_id` integer NOT NULL,
+	`score1` integer DEFAULT 0 NOT NULL,
+	`score2` integer DEFAULT 0 NOT NULL,
+	`score3` integer DEFAULT 0 NOT NULL,
+	`category_score` integer DEFAULT 0 NOT NULL,
+	PRIMARY KEY(`submission_id`, `judge_id`),
+	FOREIGN KEY (`submission_id`) REFERENCES `project_submission`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`judge_id`) REFERENCES `judge`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `event` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`timestamp` text NOT NULL,
@@ -30,6 +42,7 @@ CREATE TABLE `event` (
 --> statement-breakpoint
 CREATE TABLE `judge` (
 	`id` integer PRIMARY KEY NOT NULL,
+	`uuid` text NOT NULL,
 	`email` text NOT NULL,
 	`name` text NOT NULL,
 	`category_id` integer NOT NULL,
@@ -38,6 +51,7 @@ CREATE TABLE `judge` (
 	FOREIGN KEY (`judge_group_id`) REFERENCES `judge_group`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `judge_uuid_unique` ON `judge` (`uuid`);--> statement-breakpoint
 CREATE UNIQUE INDEX `judge_email_unique` ON `judge` (`email`);--> statement-breakpoint
 CREATE TABLE `judge_group` (
 	`id` integer PRIMARY KEY NOT NULL,

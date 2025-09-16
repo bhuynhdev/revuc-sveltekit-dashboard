@@ -9,11 +9,11 @@ type TSchema = ExtractTablesWithRelations<typeof schema>
 export type IncludeRelation<TableName extends keyof TSchema> = DBQueryConfig<'one' | 'many', boolean, TSchema, TSchema[TableName]>['with']
 
 export type ResultWithRelation<TableName extends keyof TSchema, With extends IncludeRelation<TableName> | undefined = undefined> = BuildQueryResult<
-	TSchema,
-	TSchema[TableName],
-	{
-		with: With
-	}
+  TSchema,
+  TSchema[TableName],
+  {
+    with: With
+  }
 >
 
 export type Session = typeof schema.session.$inferSelect
@@ -49,5 +49,14 @@ export type ProjectWithSubmissions = ResultWithRelation<'project', { submissions
 export type NewProject = typeof schema.project.$inferInsert
 
 export type Assignment = typeof schema.assignment.$inferSelect
-export type AssignmentDto = ResultWithRelation<'assignment', { judgeGroup: { with: { category: true }}, submission: { with: { project: true } } }>
+export type AssignmentDto = ResultWithRelation<'assignment', { judgeGroup: { with: { category: true } }, submission: { with: { project: true } } }>
 export type NewAssignment = typeof schema.assignment.$inferInsert
+
+export type Submission = typeof schema.submission.$inferSelect
+export type SubmissionWithEvaluations = ResultWithRelation<'submission', { evaluations: true, project: true }>
+export type SubmissionWithEvaluation = Omit<SubmissionWithEvaluations, "evaluations"> & {
+  evaluation?: SubmissionWithEvaluations["evaluations"][number];
+};
+
+export type Evaluation = typeof schema.evaluation.$inferSelect
+export type NewEvaluation = typeof schema.evaluation.$inferInsert

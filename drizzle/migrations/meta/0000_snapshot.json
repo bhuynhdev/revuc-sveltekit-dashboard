@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3bf09b96-0edd-49f1-a308-26a87151c3f8",
+  "id": "63e84bff-35e6-4a1a-b6d1-62c7bdc704a6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "assignment": {
@@ -99,6 +99,97 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "evaluation": {
+      "name": "evaluation",
+      "columns": {
+        "submission_id": {
+          "name": "submission_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "judge_id": {
+          "name": "judge_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "score1": {
+          "name": "score1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "score2": {
+          "name": "score2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "score3": {
+          "name": "score3",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "category_score": {
+          "name": "category_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "evaluation_submission_id_project_submission_id_fk": {
+          "name": "evaluation_submission_id_project_submission_id_fk",
+          "tableFrom": "evaluation",
+          "tableTo": "project_submission",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "evaluation_judge_id_judge_id_fk": {
+          "name": "evaluation_judge_id_judge_id_fk",
+          "tableFrom": "evaluation",
+          "tableTo": "judge",
+          "columnsFrom": [
+            "judge_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "evaluation_submission_id_judge_id_pk": {
+          "columns": [
+            "submission_id",
+            "judge_id"
+          ],
+          "name": "evaluation_submission_id_judge_id_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -216,6 +307,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "uuid": {
+          "name": "uuid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "email": {
           "name": "email",
           "type": "text",
@@ -246,6 +344,13 @@
         }
       },
       "indexes": {
+        "judge_uuid_unique": {
+          "name": "judge_uuid_unique",
+          "columns": [
+            "uuid"
+          ],
+          "isUnique": true
+        },
         "judge_email_unique": {
           "name": "judge_email_unique",
           "columns": [
