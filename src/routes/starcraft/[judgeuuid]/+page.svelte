@@ -1,6 +1,7 @@
 <script lang="ts">
   import { type Evaluation, type SubmissionWithEvaluation } from '$lib/server/db/types'
   import IconTablerMapPin from '~icons/tabler/map-pin'
+  import IconDevpost from '~icons/simple-icons/devpost'
   import type { PageProps } from './$types'
   import { getJudgeByUuid, updateEvaluation } from './starcraft.remote'
 
@@ -36,11 +37,22 @@
 {#snippet submissionView(submission: SubmissionWithEvaluation, listIndex: number)}
   {@const project = submission.project}
   <div class="p-3 outline-1 w-full max-w-lg">
-    <p>
-      {listIndex + 1}. {project.name} | <IconTablerMapPin class="inline" />
-      {project.location}
-    </p>
-    <a href={project.url} target="_blank" class="link">Devpost</a>
+    <div class="flex justify-between w-full gap-3 mb-2">
+      <div class="flex gap-1.5 overflow-hidden whitespace-nowrap">
+        <button class="truncate">
+          <span>{listIndex + 1}.</span>
+          <span class="link">{project.name}</span>
+        </button>
+        <div class="flex-shrink-0 inline">
+          <span>| <IconTablerMapPin class="inline" /> {project.location}</span>
+        </div>
+      </div>
+      {#if project.url}
+        <div class="flex-shrink-0 inline">
+          <a href={project.url} target="_blank"><IconDevpost class="inline" width="28" height="28" /></a>
+        </div>
+      {/if}
+    </div>
     {#if submission.evaluation}
       {@render scoringForm(submission.evaluation)}
     {:else}
@@ -56,8 +68,8 @@
     <input type="hidden" name="judgeUuid" value={params.judgeuuid} />
     {#each [1, 2, 3] as const as idx}
       <fieldset class="flex items-center gap-2">
-        <legend class="w-20 font-medium sr-only">Score {idx}</legend>
-        <label class="w-20 font-medium" for="score{idx}-{evaluation.submissionId}">Score {idx}</label>
+        <legend class="w-40 font-medium sr-only">Score {idx}</legend>
+        <label class="w-40 font-medium" for="score{idx}-{evaluation.submissionId}">Score {idx}</label>
         <div class="flex flex-row-reverse gap-1">
           {#each [5, 4, 3, 2, 1] as star}
             <input
