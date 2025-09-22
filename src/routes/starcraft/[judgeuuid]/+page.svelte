@@ -76,5 +76,27 @@
         </div>
       </fieldset>
     {/each}
+    {#if judge.current?.category.name !== 'General'}
+      <fieldset class="flex items-center gap-2">
+        <legend class="w-40 font-medium sr-only">Category relevance</legend>
+        <label class="w-40 font-medium" for="categoryScore-{evaluation.submissionId}">Category relevance</label>
+        <div class="flex flex-row-reverse gap-1">
+          {#each [5, 4, 3, 2, 1] as star}
+            <input
+              type="radio"
+              id="categoryScore-{evaluation.submissionId}-{star}"
+              name="categoryScore"
+              value={star}
+              checked={evaluation.categoryScore === star}
+              class="hidden peer"
+              onchange={(e) => e.currentTarget.form!.requestSubmit()}
+            />
+            <label for="categoryScore-{evaluation.submissionId}-{star}" class="cursor-pointer text-2xl text-gray-300 peer-checked:text-yellow-400">
+              ★
+            </label>
+          {/each}
+        </div>
+      </fieldset>
+    {/if}
   </form>
 {/snippet}
