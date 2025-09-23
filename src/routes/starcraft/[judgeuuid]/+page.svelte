@@ -66,49 +66,49 @@
     <input type="hidden" name="judgeId" value={evaluation.judgeId} />
     <input type="hidden" name="submissionId" value={evaluation.submissionId} />
     <input type="hidden" name="judgeUuid" value={params.judgeuuid} />
-    {#each [1, 2, 3] as const as idx}
-      <fieldset class="flex items-center gap-2">
-        <legend class="w-40 font-medium sr-only">Score {idx}</legend>
-        <label class="w-40 font-medium" for="score{idx}-{evaluation.submissionId}">Score {idx}</label>
-        <div class="flex flex-row-reverse gap-1">
-          {#each [5, 4, 3, 2, 1] as star}
-            <input
-              type="radio"
-              id="score{idx}-{evaluation.submissionId}-{star}"
-              name="score{idx}"
-              value={star}
-              checked={evaluation[`score${idx}`] === star}
-              class="hidden peer"
-              onchange={(e) => e.currentTarget.form!.requestSubmit()}
-            />
-            <label for="score{idx}-{evaluation.submissionId}-{star}" class="cursor-pointer text-2xl text-gray-300 peer-checked:text-yellow-400">
-              ★
-            </label>
-          {/each}
-        </div>
-      </fieldset>
-    {/each}
-    {#if judge.current?.category.name !== 'General'}
-      <fieldset class="flex items-center gap-2">
-        <legend class="w-40 font-medium sr-only">Category relevance</legend>
-        <label class="w-40 font-medium" for="categoryScore-{evaluation.submissionId}">Category relevance</label>
-        <div class="flex flex-row-reverse gap-1">
-          {#each [5, 4, 3, 2, 1] as star}
-            <input
-              type="radio"
-              id="categoryScore-{evaluation.submissionId}-{star}"
-              name="categoryScore"
-              value={star}
-              checked={evaluation.categoryScore === star}
-              class="hidden peer"
-              onchange={(e) => e.currentTarget.form!.requestSubmit()}
-            />
-            <label for="categoryScore-{evaluation.submissionId}-{star}" class="cursor-pointer text-2xl text-gray-300 peer-checked:text-yellow-400">
-              ★
-            </label>
-          {/each}
-        </div>
-      </fieldset>
-    {/if}
+    <div class='space-y-2'>
+      {#each [1, 2, 3] as const as idx}
+        <fieldset class="flex items-center gap-2">
+          <legend class="w-40 font-medium sr-only">Score {idx}</legend>
+          <label class="w-40 font-medium" for="score{idx}-{evaluation.submissionId}">Score {idx}</label>
+          <div class="rating">
+            {#each [1, 2, 3, 4, 5] as star}
+              <input
+                type="radio"
+                id="score{idx}-{evaluation.submissionId}-{star}"
+                name="score{idx}"
+                aria-label={`${star} star`}
+                value={star}
+                checked={evaluation[`score${idx}`] === star}
+                class="mask mask-star bg-yellow-400"
+                onchange={(e) => e.currentTarget.form!.requestSubmit()}
+              />
+            {/each}
+          </div>
+        </fieldset>
+      {/each}
+      {#if judge.current?.category.name !== 'General'}
+        <fieldset class="flex items-center gap-2">
+          <legend class="w-40 font-medium sr-only">Category relevance</legend>
+          <label class="w-40 font-medium" for="categoryScore-{evaluation.submissionId}">Category relevance</label>
+          <div class="flex flex-row-reverse gap-1">
+            {#each [5, 4, 3, 2, 1] as star}
+              <input
+                type="radio"
+                id="categoryScore-{evaluation.submissionId}-{star}"
+                name="categoryScore"
+                value={star}
+                checked={evaluation.categoryScore === star}
+                class="hidden peer"
+                onchange={(e) => e.currentTarget.form!.requestSubmit()}
+              />
+              <label for="categoryScore-{evaluation.submissionId}-{star}" class="cursor-pointer text-2xl text-gray-300 peer-checked:text-yellow-400">
+                ★
+              </label>
+            {/each}
+          </div>
+        </fieldset>
+      {/if}
+    </div>
   </form>
 {/snippet}
