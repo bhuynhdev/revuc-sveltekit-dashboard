@@ -1,5 +1,5 @@
 import { form, getRequestEvent, query } from "$app/server";
-import { evaluation, submission } from "$lib/server/db/schema";
+import { evaluation } from "$lib/server/db/schema";
 import type { NewEvaluation } from "$lib/server/db/types";
 
 export const listEvaluations = query(async () => {
@@ -24,5 +24,7 @@ export const startEvaluations = form(async () => {
     const batch = evaluationsToInsert.slice(i, i + BATCH_SIZE);
     await db.insert(evaluation).values(batch);
   }
+
+  await listEvaluations().refresh()
 })
 

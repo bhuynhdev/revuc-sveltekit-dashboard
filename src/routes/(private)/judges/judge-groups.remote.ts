@@ -85,6 +85,8 @@ export const resetAndOrganizeJudgeGroups = form(async () => {
 		const judgeIds = g.members.map((j) => j.id)
 		await db.update(judge).set({ judgeGroupId: createdGroupId }).where(inArray(judge.id, judgeIds))
 	}
+
+  await listJudgeGroups().refresh()
 })
 
 export const moveJudge = form(async (form) => {

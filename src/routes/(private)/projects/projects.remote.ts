@@ -65,6 +65,7 @@ export const importProjectsFromDevpost = form(async (form) => {
 
     await db.insert(submission).values(submittedCategoryIds.map((c) => ({ categoryId: c, projectId: insertedProjectId })))
   }
+  await listProjects().refresh()
 })
 
 export const updateProjectInfo = form(async (form) => {
@@ -83,6 +84,8 @@ export const updateProjectInfo = form(async (form) => {
     .insert(submission)
     .values(categoryIds.map((categoryId) => ({ projectId: projectId, categoryId })))
     .onConflictDoNothing({ target: [submission.categoryId, submission.projectId] })
+
+  await listProjects().refresh()
 })
 
 /**
@@ -101,11 +104,15 @@ export const toggleProjectDisqualification = form(async (form) => {
   } else {
     await db.update(project).set({ status: 'created', disqualifyReason: null })
   }
+
+  await listProjects().refresh()
 })
 
 export const deleteProject = form(async (form) => {
   const { locals: { db } } = getRequestEvent()
   const projectId = form.get('projectId') as string
   await db.delete(project).where(eq(project.id, Number(projectId)))
+
+  await listProjects().refresh()
 })
 
