@@ -52,9 +52,9 @@
     <div class="min-h-full w-4/5 bg-base-200 p-2">
       <label for="submission-details-drawer" aria-label="close sidebar" class="btn btn-error">Close</label>
       {#if chosenSubmission}
-        <h3 class='font-semibold text-lg'>{chosenSubmission.project.name}</h3>
+        <h3 class="font-semibold text-lg">{chosenSubmission.project.name}</h3>
         <h4>Summary</h4>
-        <p class='mb-2'>lorem ipsum</p>
+        <p class="mb-2">lorem ipsum</p>
         {#if chosenSubmission.evaluation}
           {@render scoringForm(chosenSubmission.evaluation)}
         {/if}
@@ -93,7 +93,7 @@
 {/snippet}
 
 {#snippet scoringForm(evaluation: Evaluation)}
-  <form {...updateEvaluation}>
+  <form {...updateEvaluation.enhance(async ({ submit }) => await submit())}>
     <input type="hidden" name="judgeId" value={evaluation.judgeId} />
     <input type="hidden" name="submissionId" value={evaluation.submissionId} />
     <input type="hidden" name="judgeUuid" value={params.judgeuuid} />

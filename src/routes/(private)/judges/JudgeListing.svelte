@@ -102,7 +102,7 @@
         <IconTablerX width="32" height="32" />
       </button>
     </header>
-    <form {...updateJudge} class="border-base-300 mt-4 rounded-md border">
+    <form {...updateJudge.enhance(async ({ submit }) => await submit())} class="border-base-300 mt-4 rounded-md border">
       <header class="bg-gray-200 px-4 py-3">
         <h3 class="font-semibold">Judge Info</h3>
       </header>

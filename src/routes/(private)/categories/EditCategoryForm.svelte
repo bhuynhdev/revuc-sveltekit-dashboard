@@ -20,7 +20,7 @@
     </button>
   </header>
 
-  <form {...updateCategory} class="border-base-300 mt-4 rounded-md border">
+  <form {...updateCategory.enhance(async ({ submit }) => await submit())} class="border-base-300 mt-4 rounded-md border">
     <header class="bg-gray-200 px-4 py-3">
       <h3 class="font-semibold">Category Info</h3>
     </header>
@@ -29,14 +29,14 @@
 
       <label class="fieldset">
         <span class="fieldset-legend text-sm">Name</span>
-        <input class="input w-full" name="categoryName" value={category.name} />
+        <input class="input w-full" name="categoryName" value={category.name} required />
       </label>
 
       <fieldset class="fieldset">
         <legend class="fieldset-legend text-sm">Type</legend>
         {#each categoryTypes as categoryType}
           <label class="flex items-center gap-2">
-            <input type="radio" name="categoryType" value={categoryType} class="radio radio-sm" checked={category.type === categoryType} />
+            <input type="radio" name="categoryType" value={categoryType} class="radio radio-sm" checked={category.type === categoryType} required />
             <span class="text-base first-letter:capitalize">{categoryType}</span>
           </label>
         {/each}

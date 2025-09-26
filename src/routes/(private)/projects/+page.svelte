@@ -4,7 +4,14 @@
   import IconTablerTrash from '~icons/tabler/trash'
   import IconTablerX from '~icons/tabler/x'
   import { listCategories } from '../categories/categories.remote'
-  import { createProjectAndSubmissions, deleteProject, importProjectsFromDevpost, listProjects, toggleProjectDisqualification, updateProjectInfo } from './projects.remote'
+  import {
+    createProjectAndSubmissions,
+    deleteProject,
+    importProjectsFromDevpost,
+    listProjects,
+    toggleProjectDisqualification,
+    updateProjectInfo
+  } from './projects.remote'
 
   const projects = listProjects()
   const categories = listCategories()
@@ -30,7 +37,7 @@
     hidden
     checked={selectedProjectId !== null}
     onchange={(e) => {
-      if (!(e.currentTarget.checked)) selectedProjectId = null
+      if (!e.currentTarget.checked) selectedProjectId = null
     }}
   />
 
@@ -174,7 +181,7 @@
       </header>
 
       <!-- Project Info -->
-      <form {...updateProjectInfo} class="border-base-300 mt-4 rounded-md border">
+      <form {...updateProjectInfo.enhance(async ({ submit }) => await submit())} class="border-base-300 mt-4 rounded-md border">
         <header class="bg-gray-200 px-4 py-3">
           <h3 class="font-semibold">Project Info</h3>
         </header>
@@ -205,7 +212,7 @@
             {#if categories.current}
               <select name="categoryIds" class="select h-auto w-full" multiple required size={categories.current.length}>
                 {#each categories.current as category}
-                  <option value={category.id} selected={project.submissions.map(s => s.categoryId).includes(category.id)}>
+                  <option value={category.id} selected={project.submissions.map((s) => s.categoryId).includes(category.id)}>
                     {category.name}
                   </option>
                 {/each}

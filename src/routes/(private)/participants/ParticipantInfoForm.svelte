@@ -71,7 +71,11 @@
     </p>
   </section>
 
-  <form id="participant-profile" {...updateParticipantInfo} class="border-base-300 mt-4 rounded-md border">
+  <form
+    id="participant-profile"
+    class="border-base-300 mt-4 rounded-md border"
+    {...updateParticipantInfo.enhance(async ({ submit }) => await submit())}
+  >
     <header class="bg-gray-200 px-4 py-3">
       <h3 class="font-semibold">Profile</h3>
     </header>
@@ -79,16 +83,16 @@
       <div class="flex gap-4">
         <label class="fieldset flex-1">
           <span class="fieldset-legend text-sm">First name</span>
-          <input type="text" name="firstName" value={participant.firstName} class="input input-bordered w-full" />
+          <input type="text" name="firstName" value={participant.firstName} class="input input-bordered w-full" required />
         </label>
         <label class="fieldset flex-1">
           <span class="fieldset-legend text-sm">Last name</span>
-          <input type="text" name="lastName" value={participant.lastName} class="input input-bordered w-full" />
+          <input type="text" name="lastName" value={participant.lastName} class="input input-bordered w-full" required />
         </label>
       </div>
       <label class="fieldset grow">
         <span class="fieldset-legend text-sm">Email</span>
-        <input type="text" name="email" value={participant.email} class="input input-bordered w-full" />
+        <input type="text" name="email" value={participant.email} class="input input-bordered w-full" required />
       </label>
 
       <div class="collapse-arrow collapse">

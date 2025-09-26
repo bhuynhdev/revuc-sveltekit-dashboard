@@ -24,7 +24,11 @@
   </div>
   <div class="flex gap-4">
     {@render addJudgesButtonAndModal()}
-    <form {...resetAndOrganizeJudgeGroups}>
+    <form
+      {...resetAndOrganizeJudgeGroups.enhance(async ({ submit }) => {
+        await submit()
+      })}
+    >
       <button type="submit" class="btn btn-primary btn-outline w-fit">
         <span aria-hidden={true}>
           <IconTablerStack2 />
