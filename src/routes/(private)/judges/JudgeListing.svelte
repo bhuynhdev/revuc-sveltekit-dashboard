@@ -107,7 +107,7 @@
         <h3 class="font-semibold">Judge Info</h3>
       </header>
       <div class="p-4">
-        <input type="hidden" name="judgeId" value="judge.id}" />
+        <input type="hidden" name="judgeId" value={judge.id} />
         <label class="fieldset">
           <span class="fieldset-legend text-sm">Name</span>
           <input type="text" class="input w-full" name="name" value={judge.name} required />
