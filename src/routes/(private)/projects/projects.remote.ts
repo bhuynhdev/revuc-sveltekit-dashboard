@@ -1,7 +1,7 @@
 import { form, getRequestEvent, query } from "$app/server"
 import { category, project, submission } from "$lib/server/db/schema"
 import { parseDevPostProjectsCsv } from "$lib/server/devPostParsing"
-import { eq, notInArray } from "drizzle-orm"
+import { and, eq, notInArray } from "drizzle-orm"
 
 export const listProjects = query(async () => {
   const { locals: { db } } = getRequestEvent()
@@ -77,7 +77,7 @@ export const updateProjectInfo = form(async (form) => {
   await db.update(project).set({ name: projectName, location, location2 }).where(eq(project.id, projectId))
 
   // Remove submissions not in the given category Ids
-  await db.delete(submission).where(notInArray(submission.categoryId, categoryIds))
+  await db.delete(submission).where(and(eq(submission.projectId, projectId), notInArray(submission.categoryId, categoryIds)))
   // Add new submissions, ignoring already existed
   await db
     .insert(submission)
