@@ -1,9 +1,10 @@
 import { form, getRequestEvent, query } from "$app/server";
 import { assignment, evaluation, judge } from "$lib/server/db/schema";
-import { and, eq } from "drizzle-orm";
+import type { Evaluation } from "$lib/server/db/types";
+import { and, eq, inArray } from "drizzle-orm";
 import * as v from 'valibot';
 
-export const getJudgeByUuid = query(v.string(), async (uuid) => {
+export const getJudgeAssignmentsByUuid = query(v.string(), async (uuid) => {
   const { locals: { db } } = getRequestEvent();
 
   const judgeRecord = await db.query.judge.findFirst({
@@ -22,24 +23,31 @@ export const getJudgeByUuid = query(v.string(), async (uuid) => {
   const assignments = await db.query.assignment.findMany({
     where: eq(assignment.judgeGroupId, judgeRecord.judgeGroupId),
     columns: { submissionId: true },
-    with: {
-      submission: {
-        with: {
-          project: true, evaluations: {
-            where: eq(evaluation.judgeId, judgeRecord.id)
-          }
-        },
-      },
-    },
-  });
+    with: { submission: { with: { project: true } } },
+  })
 
-  const assignedSubmissions = assignments.map(({ submission }) => {
-    const { evaluations, ...rest } = submission;
-    return { ...rest, evaluation: evaluations[0] };
-  });
-
-  return { ...judgeRecord, assignedSubmissions };
+  return { ...judgeRecord, assignedSubmissions: assignments.map(a => a.submission) };
 });
+
+export const getEvaluations = query(
+  v.string(),
+  async (uuid) => {
+    const { locals: { db } } = getRequestEvent()
+    const [ judgeRecord ] = await db.select().from(judge).where(eq(judge.uuid, uuid))
+    const assignments = await db.select().from(assignment).where(eq(assignment.judgeGroupId, Number(judgeRecord.judgeGroupId)))
+    const evaluations = await db.select().from(evaluation).where(inArray(evaluation.submissionId, assignments.map(a => a.submissionId)))
+    // Convert to object form: { [submissionId]: Evaluation[] }
+    const evaluationBySubmissionId = evaluations.reduce((acc, evaluation) => {
+      const id = evaluation.submissionId.toString(); // Use string keys for object map
+      if (!acc[id]) {
+        acc[id] = evaluation;
+      }
+      return acc;
+    }, {} as Record<string, Evaluation>)
+
+    return evaluationBySubmissionId
+  }
+)
 
 export const updateEvaluation = form(
   v.object({
@@ -55,6 +63,6 @@ export const updateEvaluation = form(
     const { locals: { db } } = getRequestEvent();
     const { score1, score2, score3, submissionId, judgeId, judgeUuid, categoryScore } = form
     await db.update(evaluation).set({ score1, score2, score3, categoryScore }).where(and(eq(evaluation.judgeId, judgeId), eq(evaluation.submissionId, submissionId)))
-    await getJudgeByUuid(judgeUuid).refresh()
+    await getEvaluations(judgeUuid).refresh()
   }
 )

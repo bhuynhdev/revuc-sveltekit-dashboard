@@ -1,17 +1,20 @@
 <script lang="ts">
-  import { type Evaluation, type SubmissionWithEvaluation } from '$lib/server/db/types'
-  import IconTablerMapPin from '~icons/tabler/map-pin'
+  import { type Evaluation } from '$lib/server/db/types'
   import IconDevpost from '~icons/simple-icons/devpost'
+  import IconTablerMapPin from '~icons/tabler/map-pin'
   import type { PageProps } from './$types'
-  import { getJudgeByUuid, updateEvaluation } from './starcraft.remote'
+  import { getEvaluations, getJudgeAssignmentsByUuid, updateEvaluation } from './starcraft.remote'
 
   const { params }: PageProps = $props()
 
-  const judge = $derived(getJudgeByUuid(params.judgeuuid))
+  const judgeWithAssignments = $derived(getJudgeAssignmentsByUuid(params.judgeuuid))
+  const evaluations = $derived(getEvaluations(params.judgeuuid))
   // Judging has started if evalation records have been created
-  const judgingHasStarted = $derived(!!judge.current?.assignedSubmissions.some((s) => s.evaluation))
+  const judgingHasStarted = $derived(!!evaluations)
 
-  let chosenSubmission = $state<SubmissionWithEvaluation | null>(null)
+  type JudgeWithAssignmentsDto = NonNullable<typeof judgeWithAssignments.current>
+  type SubmissionDto = JudgeWithAssignmentsDto['assignedSubmissions'][number]
+  let chosenSubmission = $state<SubmissionDto | null>(null)
   let drawerState = {
     get checked() {
       return !!chosenSubmission
@@ -25,9 +28,8 @@
 <div class="drawer">
   <input id="submission-details-drawer" type="checkbox" class="drawer-toggle" bind:checked={drawerState.checked} />
   <div class="drawer-content">
-    {#if judge.current}
-      {@const j = judge.current}
-
+    {#if judgeWithAssignments.current}
+      {@const j = judgeWithAssignments.current}
       {#if j.group}
         <p>Hello {j.name} - Group: {j.group.name}</p>
         <p><span class="italic">{j.category.name}</span> - {j.assignedSubmissions?.length || 0} projects</p>
@@ -38,13 +40,11 @@
         <p>Judging has not started</p>
       {/if}
 
-      {#if j.assignedSubmissions}
-        <div class="flex p-2 gap-2 flex-wrap justify-center">
-          {#each j.assignedSubmissions as submission, i (submission.id)}
-            {@render submissionView(submission, i)}
-          {/each}
-        </div>
-      {/if}
+      <div class="flex p-2 gap-2 flex-wrap justify-center">
+        {#each j.assignedSubmissions as submission, i (submission.id)}
+          {@render submissionView(submission, i)}
+        {/each}
+      </div>
     {/if}
   </div>
   <div class="drawer-side">
@@ -55,8 +55,9 @@
         <h3 class="font-semibold text-lg">{chosenSubmission.project.name}</h3>
         <h4>Summary</h4>
         <p class="mb-2">lorem ipsum</p>
-        {#if chosenSubmission.evaluation}
-          {@render scoringForm(chosenSubmission.evaluation, `${chosenSubmission.evaluation.submissionId}-drawer-side`)}
+        {#if evaluations.current}
+          {@const chosenEvaluation = evaluations.current[chosenSubmission.id.toString()]}
+          {@render scoringForm(chosenEvaluation, `${chosenEvaluation.submissionId}-drawer-side`)}
         {/if}
       {:else}
         No project selected
@@ -65,7 +66,7 @@
   </div>
 </div>
 
-{#snippet submissionView(submission: SubmissionWithEvaluation, listIndex: number)}
+{#snippet submissionView(submission: SubmissionDto, listIndex: number)}
   {@const project = submission.project}
   <div class="p-3 outline-1 w-full max-w-lg">
     <div class="flex justify-between w-full gap-3 mb-2">
@@ -84,8 +85,9 @@
         </div>
       {/if}
     </div>
-    {#if submission.evaluation}
-      {@render scoringForm(submission.evaluation, `${submission.evaluation.submissionId}`)}
+    {#if evaluations.current}
+      {@const evaluation = evaluations.current[submission.id.toString()]}
+      {@render scoringForm(evaluation, `${evaluation.submissionId}`)}
     {:else}
       <div>Can't give score yet</div>
     {/if}
@@ -93,9 +95,7 @@
 {/snippet}
 
 {#snippet scoringForm(evaluation: Evaluation, formKey: string)}
-  <form
-    {...updateEvaluation.for(formKey).enhance(async ({ submit }) => await submit())} onchange={(e) => e.currentTarget.requestSubmit()}
-  >
+  <form {...updateEvaluation.for(formKey).enhance(async ({ submit }) => await submit())} onchange={(e) => e.currentTarget.requestSubmit()}>
     <input type="hidden" name="judgeId" value={evaluation.judgeId} />
     <input type="hidden" name="submissionId" value={evaluation.submissionId} />
     <input type="hidden" name="judgeUuid" value={params.judgeuuid} />
@@ -119,7 +119,7 @@
           </div>
         </fieldset>
       {/each}
-      {#if judge.current?.category.name !== 'General'}
+      {#if judgeWithAssignments.current?.category.name !== 'General'}
         <fieldset class="flex items-center gap-2">
           <legend class="w-40 font-medium sr-only">Category relevance</legend>
           <label class="w-40 font-medium" for="categoryScore-{evaluation.submissionId}">Category relevance</label>
@@ -135,7 +135,6 @@
                 class="mask mask-star bg-yellow-400"
               />
             {/each}
-
           </div>
         </fieldset>
       {/if}
