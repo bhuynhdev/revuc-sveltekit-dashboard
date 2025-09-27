@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { EvaluationWithSubmissionAndProject } from '$lib/server/db/types'
-  import { calculateZScoresByProject, organizeEvaluationsByProject } from './scoring-util'
+  import { mean } from 'simple-statistics'
+  import { calculateZScoresByProject } from './scoring-util'
 
   type RawScoreViewProps = {
     evaluations: EvaluationWithSubmissionAndProject[]
@@ -30,9 +31,9 @@
         <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score1) || [])}</td>
         <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score2) || [])}</td>
         <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score3) || [])}</td>
-        <td>{@render zScoreList(evaluations.map(e => e.zScore1))}</td>
-        <td>{@render zScoreList(evaluations.map(e => e.zScore2))}</td>
-        <td>{@render zScoreList(evaluations.map(e => e.zScore3))}</td>
+        <td>{@render zScoreList(evaluations.map((e) => e.zScore1))}</td>
+        <td>{@render zScoreList(evaluations.map((e) => e.zScore2))}</td>
+        <td>{@render zScoreList(evaluations.map((e) => e.zScore3))}</td>
       </tr>
     {/each}
   </tbody>
@@ -41,7 +42,7 @@
 {#snippet scoreNumbersWithFrequencies(scores: number[])}
   {@const freqMap = scores.reduce((map, score) => map.set(score, (map.get(score) || 0) + 1), new Map<number, number>())}
   <div class="flex gap-1.5">
-    {#each [...freqMap.entries()] as [score, count]}
+    {#each [...freqMap.entries()].sort((a, b) => b[0] - a[0]) as [score, count]}
       <span class="relative">
         <span class="text-lg font-bold">{score}</span>
         <span class="text-xs text-gray-500 align-sub">{count}</span>
@@ -51,5 +52,12 @@
 {/snippet}
 
 {#snippet zScoreList(zScores: number[])}
-  <span>{zScores.filter(n => !Number.isNaN(n)).map(n => n.toFixed(3)).join(' ')}</span>
+  {@const cleanedZScores = zScores.filter(n => !Number.isNaN(n))}
+  {@const meanZScore = mean(cleanedZScores).toFixed(3)}
+  <span
+    >{cleanedZScores
+      .map((n) => n.toFixed(3))
+      .join(' ')}</span
+  >
+  <span class="font-bold">&nbsp;({meanZScore})</span>
 {/snippet}
