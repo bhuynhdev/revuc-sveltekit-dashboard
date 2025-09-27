@@ -56,7 +56,7 @@
         <h4>Summary</h4>
         <p class="mb-2">lorem ipsum</p>
         {#if chosenSubmission.evaluation}
-          {@render scoringForm(chosenSubmission.evaluation)}
+          {@render scoringForm(chosenSubmission.evaluation, `${chosenSubmission.evaluation.submissionId}-drawer-side`)}
         {/if}
       {:else}
         No project selected
@@ -85,15 +85,17 @@
       {/if}
     </div>
     {#if submission.evaluation}
-      {@render scoringForm(submission.evaluation)}
+      {@render scoringForm(submission.evaluation, `${submission.evaluation.submissionId}`)}
     {:else}
       <div>Can't give score yet</div>
     {/if}
   </div>
 {/snippet}
 
-{#snippet scoringForm(evaluation: Evaluation)}
-  <form {...updateEvaluation.enhance(async ({ submit }) => await submit())}>
+{#snippet scoringForm(evaluation: Evaluation, formKey: string)}
+  <form
+    {...updateEvaluation.for(formKey).enhance(async ({ submit }) => await submit())} onchange={(e) => e.currentTarget.requestSubmit()}
+  >
     <input type="hidden" name="judgeId" value={evaluation.judgeId} />
     <input type="hidden" name="submissionId" value={evaluation.submissionId} />
     <input type="hidden" name="judgeUuid" value={params.judgeuuid} />
@@ -112,7 +114,6 @@
                 value={star}
                 checked={evaluation[`score${idx}`] === star}
                 class="mask mask-star bg-yellow-400"
-                onchange={(e) => e.currentTarget.form!.requestSubmit()}
               />
             {/each}
           </div>
@@ -123,20 +124,18 @@
           <legend class="w-40 font-medium sr-only">Category relevance</legend>
           <label class="w-40 font-medium" for="categoryScore-{evaluation.submissionId}">Category relevance</label>
           <div class="flex flex-row-reverse gap-1">
-            {#each [5, 4, 3, 2, 1] as star}
+            {#each [1, 2, 3, 4, 5] as star}
               <input
                 type="radio"
                 id="categoryScore-{evaluation.submissionId}-{star}"
                 name="categoryScore"
+                aria-label={`${star} star`}
                 value={star}
                 checked={evaluation.categoryScore === star}
-                class="hidden peer"
-                onchange={(e) => e.currentTarget.form!.requestSubmit()}
+                class="mask mask-star bg-yellow-400"
               />
-              <label for="categoryScore-{evaluation.submissionId}-{star}" class="cursor-pointer text-2xl text-gray-300 peer-checked:text-yellow-400">
-                ★
-              </label>
             {/each}
+
           </div>
         </fieldset>
       {/if}
