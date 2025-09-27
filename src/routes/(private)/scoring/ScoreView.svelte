@@ -1,0 +1,45 @@
+<script lang="ts">
+  import type { EvaluationWithSubmissionAndProject } from '$lib/server/db/types'
+  import { organizeEvaluationsByProject } from './scoring-util'
+
+  type RawScoreViewProps = {
+    evaluations: EvaluationWithSubmissionAndProject[]
+  }
+
+  let { evaluations }: RawScoreViewProps = $props()
+  const evaluationsByProject = $derived(organizeEvaluationsByProject(evaluations))
+</script>
+
+<table class="table table-auto">
+  <thead>
+    <tr class="font-bold">
+      <th>Project</th>
+      <th>Score 1</th>
+      <th>Score 2</th>
+      <th>Score 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#each evaluationsByProject.entries() as [_projectId, evaluations]}
+      {@const project = evaluations[0].submission.project}
+      <tr>
+        <td>{project.name}</td>
+        <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score1) || [])}</td>
+        <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score2) || [])}</td>
+        <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score3) || [])}</td>
+      </tr>
+    {/each}
+  </tbody>
+</table>
+
+{#snippet scoreNumbersWithFrequencies(scores: number[])}
+  {@const freqMap = scores.reduce((map, score) => map.set(score, (map.get(score) || 0) + 1), new Map<number, number>())}
+  <div class="flex gap-1.5">
+    {#each [...freqMap.entries()] as [score, count]}
+      <span class="relative">
+        <span class="text-lg font-bold">{score}</span>
+        <span class="text-xs text-gray-500 align-sub">{count}</span>
+      </span>
+    {/each}
+  </div>
+{/snippet}

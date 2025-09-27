@@ -60,3 +60,5 @@ export type SubmissionWithEvaluation = Omit<SubmissionWithEvaluations, "evaluati
 
 export type Evaluation = typeof schema.evaluation.$inferSelect
 export type NewEvaluation = typeof schema.evaluation.$inferInsert
+
+export type EvaluationWithSubmissionAndProject = ResultWithRelation<'evaluation', { submission: { with: { project: true } } }>
