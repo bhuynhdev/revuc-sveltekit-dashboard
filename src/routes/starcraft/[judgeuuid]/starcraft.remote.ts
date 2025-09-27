@@ -41,15 +41,20 @@ export const getJudgeByUuid = query(v.string(), async (uuid) => {
   return { ...judgeRecord, assignedSubmissions };
 });
 
-export const updateEvaluation = form(async (form) => {
-  const { locals: { db } } = getRequestEvent();
-
-  const score1 = Number(form.get('score1'))
-  const score2 = Number(form.get('score2'))
-  const score3 = Number(form.get('score3'))
-  const submissionId = Number(form.get('submissionId'))
-  const judgeId = Number(form.get('judgeId'))
-
-  await db.update(evaluation).set({ score1, score2, score3 }).where(and(eq(evaluation.judgeId, judgeId), eq(evaluation.submissionId, submissionId)))
-  await getJudgeByUuid(String(form.get('judgeUuid'))).refresh()
-})
+export const updateEvaluation = form(
+  v.object({
+    judgeUuid: v.string(),
+    score1: v.pipe(v.string(), v.transform(Number), v.number()),
+    score2: v.pipe(v.string(), v.transform(Number), v.number()),
+    score3: v.pipe(v.string(), v.transform(Number), v.number()),
+    submissionId: v.pipe(v.string(), v.transform(Number), v.number()),
+    judgeId: v.pipe(v.string(), v.transform(Number), v.number()),
+    categoryScore: v.optional(v.pipe(v.string(), v.transform(Number), v.number())),
+  }),
+  async (form) => {
+    const { locals: { db } } = getRequestEvent();
+    const { score1, score2, score3, submissionId, judgeId, judgeUuid, categoryScore } = form
+    await db.update(evaluation).set({ score1, score2, score3, categoryScore }).where(and(eq(evaluation.judgeId, judgeId), eq(evaluation.submissionId, submissionId)))
+    await getJudgeByUuid(judgeUuid).refresh()
+  }
+)

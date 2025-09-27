@@ -20,7 +20,7 @@
     </button>
   </header>
 
-  <form {...updateCategory.enhance(async ({ submit }) => await submit())} class="border-base-300 mt-4 rounded-md border">
+  <form {...updateCategory.for(category.id).enhance(async ({ submit }) => await submit())} class="border-base-300 mt-4 rounded-md border">
     <header class="bg-gray-200 px-4 py-3">
       <h3 class="font-semibold">Category Info</h3>
     </header>

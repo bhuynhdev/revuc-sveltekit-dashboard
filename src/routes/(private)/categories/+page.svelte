@@ -67,7 +67,7 @@
               <button type="button" class="btn btn-primary h-8 text-white" onclick={() => (selectedCategory = category)}>Edit</button>
             </td>
             <td class="pl-0">
-              <form {...deleteCategory}>
+              <form {...deleteCategory.for(category.id)}>
                 <input type="hidden" name="categoryId" value={category.id} />
                 <button type="submit" class="btn btn-error btn-soft h-8" aria-label="Delete">
                   <span class="hidden md:inline">Delete </span>

@@ -1,11 +1,12 @@
-import * as v from "valibot"
 import { form, getRequestEvent, query } from "$app/server";
-import { attendanceStatuses, DEFAULT_ITEMS_PER_PAGINATION } from "$lib/constants";
-import { and, eq, like, sql } from "drizzle-orm";
+import { attendanceStatuses } from "$lib/constants";
+import { attendanceActions, determineNextAttendanceStatus, getNextAttendanceActions, type AttendanceAction } from "$lib/server/attendanceAction";
 import { participant } from "$lib/server/db/schema";
-import "@total-typescript/ts-reset/filter-boolean"
-import { error } from "@sveltejs/kit";
 import type { AttendanceStatus, Participant, ParticipantUpdate } from "$lib/server/db/types";
+import { error } from "@sveltejs/kit";
+import "@total-typescript/ts-reset/filter-boolean";
+import { and, eq, like, sql } from "drizzle-orm";
+import * as v from "valibot";
 
 const listParticipantsSchema = v.object({
   query: v.nullable(v.string()),
@@ -76,23 +77,28 @@ export const listParticipantsStatistics = query(async () => {
   return { participantCountByStatus }
 })
 
-export const updateParticipantInfo = form(async (formData) => {
+export const updateParticipantInfo = form(
+  v.objectWithRest({ participantId: v.string() }, v.string()),
+  async (form) => {
+    const { locals: { db } } = getRequestEvent()
+    const now = new Date().toISOString()
+    const { participantId, ...participantData } = form
+    const pId = parseInt(participantId.toString())
+
+    await db
+      .update(participant)
+      .set({ ...participantData, updatedAt: now })
+      .where(eq(participant.id, pId))
+      .returning()
+  })
+
+export const advanceAttendanceStatus = form(v.object({
+  participantId: v.string(),
+  attendanceAction: v.picklist(attendanceActions)
+}), async (form) => {
   const { locals: { db } } = getRequestEvent()
   const now = new Date().toISOString()
-  const { participantId, ...data } = Object.fromEntries(formData)
-  const pId = parseInt(participantId.toString())
-
-  await db
-    .update(participant)
-    .set({ ...data, updatedAt: now })
-    .where(eq(participant.id, pId))
-    .returning()
-})
-
-export const advanceAttendanceStatus = form(async (formData) => {
-  const { locals: { db } } = getRequestEvent()
-  const now = new Date().toISOString()
-  const { participantId, attendanceAction } = Object.fromEntries(formData)
+  const { participantId, attendanceAction } = form
   const pId = parseInt(participantId.toString())
 
   const [participantInfo] = await db.select().from(participant).where(eq(participant.id, pId))
@@ -114,73 +120,6 @@ export const advanceAttendanceStatus = form(async (formData) => {
     await db.update(participant).set(updateContent).where(eq(participant.id, pId))
   }
 })
-
-
-type AttendanceAction = 'CheckIn' | 'ConfirmAttendance' | 'Unconfirm' | 'ToggleLateCheckIn'
-
-/**
- * State machine describing possible transitions given an input attendance status
- * And return the next status given a particular transition
- *
- * Example:
- * ```
- * const newStatus = ATTENDANCE_STATUS_STATE_MACHINE[currentStatus]['CheckIn']
- * ```
- */
-const ATTENDANCE_STATUS_STATE_MACHINE: Record<AttendanceStatus, Partial<Record<AttendanceAction, AttendanceStatus>>> = {
-  registered: {
-    get ConfirmAttendance() {
-      // TODO: Check waitlist
-      const isWaitlisted = false
-      return isWaitlisted ? 'waitlist' : 'confirmed'
-    }
-  },
-  declined: {
-    get ConfirmAttendance() {
-      // Treat declined same as registered when it comes to confirming attendance
-      return ATTENDANCE_STATUS_STATE_MACHINE.registered.ConfirmAttendance
-    }
-  },
-  confirmed: {
-    CheckIn: 'attended',
-    ToggleLateCheckIn: 'confirmeddelayedcheckin',
-    Unconfirm: 'declined'
-  },
-  confirmeddelayedcheckin: {
-    CheckIn: 'attended',
-    ToggleLateCheckIn: 'confirmed'
-  },
-  waitlist: {
-    CheckIn: 'waitlistattended'
-  },
-  attended: {},
-  waitlistattended: {}
-} as const
-
-/**
- * Given the current attendance status and action, determine the next attendance status
- */
-function determineNextAttendanceStatus(args: { currentStatus: AttendanceStatus; action: AttendanceAction }): AttendanceStatus | null {
-  const currentState = ATTENDANCE_STATUS_STATE_MACHINE[args.currentStatus]
-  const potentialTransitions = Object.keys(currentState)
-  if (potentialTransitions.length == 0) {
-    return null // No more transition available at this state
-  }
-  if (args.action in currentState) {
-    return currentState[args.action as keyof typeof currentState] ?? null
-  }
-  throw Error(`AttendanceAtion ${args.action} is not possible given state ${args.currentStatus}`)
-}
-
-/**
- * Determine the next attendance action to display on the UI
- * given the current attendance status
- */
-function getNextAttendanceActions(currentStatus: AttendanceStatus): Array<AttendanceAction> {
-  return Object.getOwnPropertyNames(ATTENDANCE_STATUS_STATE_MACHINE[currentStatus]) as Array<
-    keyof (typeof ATTENDANCE_STATUS_STATE_MACHINE)[AttendanceStatus]
-  >
-}
 
 export type ParticipantDto = Participant & { availableAttendanceActions: ReturnType<typeof getNextAttendanceActions> }
 

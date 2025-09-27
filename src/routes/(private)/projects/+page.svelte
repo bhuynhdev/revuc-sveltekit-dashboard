@@ -133,7 +133,7 @@
         <div class="grid grid-cols-[7rem_1fr] items-center">
           <span class="text-sm">Categories</span>
           {#if categories.current}
-            <select class="select h-auto" name="categoryIds" aria-label="Categories" multiple size={categories.current.length}>
+            <select class="select h-auto" name="categoryIds[]" aria-label="Categories" multiple size={categories.current.length}>
               {#each categories.current as c}
                 <option value={c.id}>{c.name}</option>
               {/each}
@@ -210,7 +210,7 @@
           <label class="fieldset">
             <span class="fieldset-legend text-sm">Categories</span>
             {#if categories.current}
-              <select name="categoryIds" class="select h-auto w-full" multiple required size={categories.current.length}>
+              <select name="categoryIds[]" class="select h-auto w-full" multiple required size={categories.current.length}>
                 {#each categories.current as category}
                   <option value={category.id} selected={project.submissions.map((s) => s.categoryId).includes(category.id)}>
                     {category.name}
@@ -246,7 +246,7 @@
               <input type="text" class="input w-full" name="disqualifyReason" value={project.disqualifyReason ?? ''} required />
             </label>
             <div class="mt-2 flex justify-end gap-3">
-              <button type="submit" name="update-disqualify-reason-only" value="true" class="btn btn-primary btn-outline">
+              <button type="submit" name="updateDisqualifyReasonOnly" value="true" class="btn btn-primary btn-outline">
                 Update disqualification reason
               </button>
               <button type="submit" class="btn btn-primary text-white"> Re-qualify </button>
