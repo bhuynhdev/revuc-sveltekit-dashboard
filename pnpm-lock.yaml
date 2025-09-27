@@ -32,6 +32,9 @@ importers:
       nanoid:
         specifier: ^5.1.6
         version: 5.1.6
+      simple-statistics:
+        specifier: ^7.8.8
+        version: 7.8.8
       unplugin-icons:
         specifier: ^22.3.0
         version: 22.3.0(svelte@5.39.6)
@@ -1850,6 +1853,9 @@ packages:
   signal-exit@3.0.7:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
 
+  simple-statistics@7.8.8:
+    resolution: {integrity: sha512-CUtP0+uZbcbsFpqEyvNDYjJCl+612fNgjT8GaVuvMG7tBuJg8gXGpsP5M7X658zy0IcepWOZ6nPBu1Qb9ezA1w==}
+
   simple-swizzle@0.2.4:
     resolution: {integrity: sha512-nAu1WFPQSMNr2Zn9PGSZK9AGn4t/y97lEm+MXTtUDwfP0ksAIX4nO+6ruD9Jwut4C49SB1Ws+fbXsm/yScWOHw==}
 
@@ -3449,6 +3455,8 @@ snapshots:
   shell-quote@1.8.3: {}
 
   signal-exit@3.0.7: {}
+
+  simple-statistics@7.8.8: {}
 
   simple-swizzle@0.2.4:
     dependencies:

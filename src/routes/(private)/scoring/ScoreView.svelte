@@ -1,13 +1,13 @@
 <script lang="ts">
   import type { EvaluationWithSubmissionAndProject } from '$lib/server/db/types'
-  import { organizeEvaluationsByProject } from './scoring-util'
+  import { calculateZScoresByProject, organizeEvaluationsByProject } from './scoring-util'
 
   type RawScoreViewProps = {
     evaluations: EvaluationWithSubmissionAndProject[]
   }
 
   let { evaluations }: RawScoreViewProps = $props()
-  const evaluationsByProject = $derived(organizeEvaluationsByProject(evaluations))
+  const evaluationsWithZScoreByProject = $derived(calculateZScoresByProject(evaluations))
 </script>
 
 <table class="table table-auto">
@@ -17,16 +17,22 @@
       <th>Score 1</th>
       <th>Score 2</th>
       <th>Score 3</th>
+      <th>Z-score 1</th>
+      <th>Z-score 2</th>
+      <th>Z-score 3</th>
     </tr>
   </thead>
   <tbody>
-    {#each evaluationsByProject.entries() as [_projectId, evaluations]}
+    {#each evaluationsWithZScoreByProject.entries() as [_projectId, evaluations]}
       {@const project = evaluations[0].submission.project}
       <tr>
         <td>{project.name}</td>
         <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score1) || [])}</td>
         <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score2) || [])}</td>
         <td>{@render scoreNumbersWithFrequencies(evaluations.map((e) => e.score3) || [])}</td>
+        <td>{@render zScoreList(evaluations.map(e => e.zScore1))}</td>
+        <td>{@render zScoreList(evaluations.map(e => e.zScore2))}</td>
+        <td>{@render zScoreList(evaluations.map(e => e.zScore3))}</td>
       </tr>
     {/each}
   </tbody>
@@ -42,4 +48,8 @@
       </span>
     {/each}
   </div>
+{/snippet}
+
+{#snippet zScoreList(zScores: number[])}
+  <span>{zScores.filter(n => !Number.isNaN(n)).map(n => n.toFixed(3)).join(' ')}</span>
 {/snippet}
