@@ -52,12 +52,10 @@
 {/snippet}
 
 {#snippet zScoreList(zScores: number[])}
-  {@const cleanedZScores = zScores.filter(n => !Number.isNaN(n))}
-  {@const meanZScore = mean(cleanedZScores).toFixed(3)}
-  <span
-    >{cleanedZScores
-      .map((n) => n.toFixed(3))
-      .join(' ')}</span
-  >
-  <span class="font-bold">&nbsp;({meanZScore})</span>
+  {@const cleanedZScores = zScores.filter((n) => !Number.isNaN(n))}
+  <span>{cleanedZScores.map((n) => n.toFixed(3)).join(' ')}</span>
+  {#if cleanedZScores.length}
+    {@const meanZScore = mean(cleanedZScores).toFixed(3)}
+    <span class="font-bold">&nbsp;({meanZScore})</span>
+  {/if}
 {/snippet}
