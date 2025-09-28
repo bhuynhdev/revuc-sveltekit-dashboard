@@ -1,13 +1,17 @@
 <script lang="ts">
+  import type { Category } from '$lib/server/db/types'
+  import { listCategories } from '../categories/categories.remote'
   import ScoreView from './ScoreView.svelte'
   import { listEvaluations, startEvaluations } from './scoring.remote'
 
   const evaluations = listEvaluations()
-
-  const scoreViewTypess = ['rawscore', 'zscore'] as const
-  type ScoreViewType = typeof scoreViewTypess[number]
-  let chosenScoreViewType = $state<ScoreViewType>('rawscore')
-
+  let chosenCategoryId = $state<Category['id']>(1)
+  const filteredEvaluations = $derived(
+    (evaluations.current ?? []).filter(
+      // Don't filter if chosenCategoryId is 1 (i.e. the General category), since all scores are used for General judging
+      e => chosenCategoryId === 1 || e.submission.categoryId === chosenCategoryId
+    )
+  );
 </script>
 
 <div>
@@ -18,12 +22,10 @@
       <button class="btn btn-primary" type="submit">Start evaluations</button>
     </form>
   {/if}
-  <select class="select" oninput={e => chosenScoreViewType = e.currentTarget.value as ScoreViewType}>
-    {#each scoreViewTypess as viewType}
-      <option value={viewType}>{viewType}</option>
+  <select class="select" oninput={(e) => (chosenCategoryId = Number(e.currentTarget.value))}>
+    {#each await listCategories() as category}
+      <option value={category.id}>{category.name}</option>
     {/each}
   </select>
-  {#if chosenScoreViewType === 'rawscore'}
-    <ScoreView evaluations={evaluations.current || []} />
-  {/if}
+  <ScoreView evaluations={filteredEvaluations} />
 </div>
