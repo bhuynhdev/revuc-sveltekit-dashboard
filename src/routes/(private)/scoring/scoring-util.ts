@@ -59,9 +59,9 @@ export function calculateZScoresByProject<T extends EvaluationWithSubmissionAndP
   * Special rule: If any member of the population is 0, we return Nan, since 0-score means juding hasn't finished yet, and we shall not cast z-score evaluation
   */
 function calculateZScoreAcrossPopulation(population: number[], target: number) {
-  if (population.includes(0)) {
-    return NaN
-  }
+  if (population.includes(0)) return NaN
+  if (population.length === 0) return 0
+
   const meanValue = mean(population)
   const stdValue = standardDeviation(population)
   const zScoreValue = zScore(target, meanValue, stdValue)
